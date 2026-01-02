@@ -13,12 +13,13 @@ export async function POST(req: Request) {
 
     try {
         const formData = await req.formData();
-        const file = formData.get('file') as Blob;
-        const albumId = formData.get('albumId') as string;
-        const caption = formData.get('caption') as string;
-        const explicitFolder = formData.get('folder') as string;
+        const file = formData.get('file') as File | null;
+        const albumId = formData.get('albumId') as string | null;
+        const caption = formData.get('caption') as string | null;
+        const explicitFolder = formData.get('folder') as string | null;
+
         if (!file) {
-            return NextResponse.json({ error: 'Missing file' }, { status: 400 });
+            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
         // 1. Size Limit (10MB)
@@ -27,7 +28,8 @@ export async function POST(req: Request) {
         }
 
         // Determine folder & Validate Type
-        let folder = explicitFolder || 'pharma_elevate_misc';
+        let folder = explicitFolder ?? 'pharma_elevate_misc';
+
         if (albumId) {
             folder = 'pharma_elevate_albums';
             if (!file.type.startsWith('image/')) {
@@ -45,6 +47,18 @@ export async function POST(req: Request) {
             if (!file.type.startsWith('image/')) {
                 return NextResponse.json({ error: 'Only images allowed for profile' }, { status: 400 });
             }
+        }
+
+        // Hardening: Validate Allowlist if explicit folder provided (optional but good)
+        const allowedFolders = [
+            'pharma_elevate_profiles',
+            'pharma_elevate_notes',
+            'pharma_elevate_misc',
+            'pharma_elevate_albums'
+        ];
+        if (!allowedFolders.includes(folder)) {
+            // Fallback to misc if invalid folder somehow passed
+            folder = 'pharma_elevate_misc';
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
@@ -75,7 +89,7 @@ export async function POST(req: Request) {
             publicId: uploadResult.public_id,
             albumId,
             uploadedBy: (session.user as any).id,
-            caption,
+            caption: caption || '',
             isApproved: (session.user as any).role === 'admin', // Auto-approve if admin
         });
 
