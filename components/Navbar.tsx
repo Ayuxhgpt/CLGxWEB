@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut, LayoutDashboard, Image as ImageIcon, BookOpen } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard, Image as ImageIcon, BookOpen, Settings } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -70,18 +71,53 @@ export default function Navbar() {
                                 </Button>
                             </Link>
 
-                            <div className="relative group">
-                                <Link href="/profile">
-                                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[2px] cursor-pointer hover:shadow-lg hover:shadow-purple-500/20 transition-all">
-                                        <div className="h-full w-full rounded-full bg-[var(--bg-main)] flex items-center justify-center overflow-hidden">
-                                            {session.user?.image ? (
-                                                <img src={session.user.image} alt="User" className="h-full w-full object-cover" />
-                                            ) : (
-                                                <span className="font-bold text-xs">{session.user?.name?.[0]?.toUpperCase()}</span>
-                                            )}
-                                        </div>
+                            {/* Profile Dropdown */}
+                            <div className="relative group" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
+                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[2px] cursor-pointer hover:shadow-lg hover:shadow-purple-500/20 transition-all">
+                                    <div className="h-full w-full rounded-full bg-[var(--bg-main)] flex items-center justify-center overflow-hidden">
+                                        {session.user?.image ? (
+                                            <img src={session.user.image} alt="User" className="h-full w-full object-cover" />
+                                        ) : (
+                                            <span className="font-bold text-xs">{session.user?.name?.[0]?.toUpperCase()}</span>
+                                        )}
                                     </div>
-                                </Link>
+                                </div>
+
+                                {/* Dropdown Menu */}
+                                <AnimatePresence>
+                                    {isProfileOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-xl overflow-hidden p-2"
+                                        >
+                                            <div className="px-3 py-2 border-b border-[var(--border-subtle)] mb-2">
+                                                <p className="text-sm font-bold text-[var(--text-primary)] truncate">{session.user?.name}</p>
+                                                <p className="text-xs text-[var(--text-secondary)] truncate">{session.user?.email}</p>
+                                            </div>
+
+                                            <Link href="/profile" onClick={() => setIsProfileOpen(false)}>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface-2)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
+                                                    <User className="h-4 w-4" /> My Profile
+                                                </div>
+                                            </Link>
+                                            <Link href="/settings" onClick={() => setIsProfileOpen(false)}>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface-2)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
+                                                    <Settings className="h-4 w-4" /> Settings
+                                                </div>
+                                            </Link>
+                                            <div className="h-px bg-[var(--border-subtle)] my-2" />
+                                            <button
+                                                onClick={() => signOut()}
+                                                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-red-500/10 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer text-left"
+                                            >
+                                                <LogOut className="h-4 w-4" /> Sign Out
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     ) : (
