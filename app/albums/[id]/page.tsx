@@ -1,9 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import Navbar from '@/components/Navbar';
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import Navbar from "@/components/Navbar";
+import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+    Image as ImageIcon, UploadCloud, ChevronLeft,
+    Calendar, User, X
+} from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function AlbumDetails() {
     const { data: session } = useSession();
@@ -11,13 +22,14 @@ export default function AlbumDetails() {
     const [album, setAlbum] = useState<any>(null);
     const [images, setImages] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
+
+    // Upload Form State
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
-    const [caption, setCaption] = useState('');
+    const [caption, setCaption] = useState("");
 
     useEffect(() => {
-        if (params?.id) {
-            fetchDetails();
-        }
+        if (params?.id) fetchDetails();
     }, [params?.id]);
 
     const fetchDetails = async () => {
@@ -35,89 +47,162 @@ export default function AlbumDetails() {
         setUploading(true);
 
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('albumId', params?.id as string);
-        formData.append('caption', caption);
+        formData.append("file", file);
+        formData.append("albumId", params?.id as string);
+        formData.append("caption", caption);
 
         try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
+            const res = await fetch("/api/upload", {
+                method: "POST",
                 body: formData,
             });
 
             if (res.ok) {
-                alert('Image uploaded! It will appear after admin approval.');
+                alert("Memory uploaded successfully! It will appear after approval.");
                 setFile(null);
-                setCaption('');
+                setCaption("");
+                setIsUploadOpen(false);
             } else {
-                alert('Upload failed');
+                alert("Upload failed");
             }
         } catch (error) {
             console.error(error);
-            alert('Upload error');
+            alert("Upload error");
         } finally {
             setUploading(false);
         }
     };
 
-    if (!album) return <div className="text-white p-8">Loading...</div>;
+    if (!album) return (
+        <div className="min-h-screen bg-[var(--bg-main)]">
+            <Navbar />
+            <div className="container mx-auto pt-32 px-4 text-center">Loading...</div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <div className="min-h-screen bg-[var(--bg-main)]">
             <Navbar />
-            <div className="container mx-auto p-8">
-                <h1 className="text-3xl font-bold mb-2">{album.title}</h1>
-                <p className="text-gray-400 mb-8">{album.description}</p>
 
-                {session && (
-                    <div className="mb-10 p-6 bg-gray-800 rounded border border-gray-700">
-                        <h3 className="text-xl font-bold mb-4">Add Memory</h3>
-                        <form onSubmit={handleUpload} className="space-y-4">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Caption (optional)"
-                                value={caption}
-                                onChange={(e) => setCaption(e.target.value)}
-                                className="w-full p-2 bg-gray-700 rounded text-white"
-                            />
-                            <button
-                                type="submit"
-                                disabled={uploading}
-                                className={`px-4 py-2 rounded font-bold ${uploading ? 'bg-gray-600' : 'bg-green-600 hover:bg-green-700'
-                                    }`}
-                            >
-                                {uploading ? 'Uploading...' : 'Upload Image'}
-                            </button>
-                        </form>
-                    </div>
-                )}
+            {/* Hero / Header */}
+            <div className="relative pt-32 pb-12 px-4 bg-gradient-to-b from-[var(--bg-surface-2)] to-[var(--bg-main)] border-b border-[var(--border-subtle)]">
+                <div className="container mx-auto max-w-7xl">
+                    <Link href="/albums" className="inline-flex items-center text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors">
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Back to Albums
+                    </Link>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {images.map((img) => (
-                        <div key={img._id} className="relative group">
-                            <img
-                                src={img.imageUrl}
-                                alt={img.caption}
-                                className="w-full h-48 object-cover rounded-lg"
-                            />
-                            {img.caption && (
-                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 p-2 text-sm rounded-b-lg opacity-0 group-hover:opacity-100 transition">
-                                    {img.caption}
-                                </div>
-                            )}
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className="px-3 py-1 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-bold uppercase tracking-wider">
+                                    {album.year}
+                                </span>
+                                <span className="text-[var(--text-muted)] text-sm flex items-center">
+                                    <ImageIcon className="h-3 w-3 mr-1" /> {images.length} Photos
+                                </span>
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">{album.title}</h1>
+                            <p className="text-lg text-[var(--text-secondary)] max-w-2xl">{album.description}</p>
                         </div>
-                    ))}
-                    {images.length === 0 && (
-                        <p className="text-gray-500 col-span-full text-center">No images yet.</p>
-                    )}
+
+                        {session && (
+                            <Button
+                                onClick={() => setIsUploadOpen(!isUploadOpen)}
+                                className="shadow-lg shadow-[var(--accent-primary)]/20"
+                            >
+                                <UploadCloud className="mr-2 h-4 w-4" /> Add Memory
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            <main className="container mx-auto px-4 py-12 max-w-7xl">
+
+                {/* Upload Section (Collapsible) */}
+                <AnimatePresence>
+                    {isUploadOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            animate={{ opacity: 1, height: "auto", marginBottom: 48 }}
+                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <Card className="bg-[var(--bg-surface)] border-[var(--accent-primary)]/30 relative">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsUploadOpen(false)}
+                                    className="absolute top-2 right-2"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Upload a new photo</h3>
+                                <form onSubmit={handleUpload} className="flex flex-col md:flex-row gap-4 items-end">
+                                    <div className="flex-1 w-full">
+                                        <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Select Photo</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                            className="block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent-primary)]/10 file:text-[var(--accent-primary)] hover:file:bg-[var(--accent-primary)]/20 cursor-pointer"
+                                        />
+                                    </div>
+                                    <div className="flex-1 w-full">
+                                        <Input
+                                            placeholder="Write a caption..."
+                                            value={caption}
+                                            onChange={(e) => setCaption(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button type="submit" isLoading={uploading} disabled={!file || uploading}>
+                                        Upload
+                                    </Button>
+                                </form>
+                            </Card>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Masonry Grid */}
+                {images.length > 0 ? (
+                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                        {images.map((img, idx) => (
+                            <motion.div
+                                key={img._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="break-inside-avoid"
+                            >
+                                <div className="relative group rounded-xl overflow-hidden bg-[var(--bg-surface)] shadow-lg hover:shadow-2xl transition-all duration-300">
+                                    <img
+                                        src={img.imageUrl}
+                                        alt={img.caption}
+                                        className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                                        <div>
+                                            <p className="text-white font-medium mb-1">{img.caption}</p>
+                                            <div className="flex items-center text-xs text-gray-400">
+                                                <User className="h-3 w-3 mr-1" /> {img.uploadedBy?.name || "Member"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    <EmptyState
+                        title="No photos yet"
+                        description="Be the first to add a memory to this album!"
+                        icon={ImageIcon}
+                        className="py-20"
+                    />
+                )}
+            </main>
         </div>
     );
 }

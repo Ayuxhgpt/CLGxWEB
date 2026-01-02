@@ -1,9 +1,17 @@
-'use client';
+"use client";
 
-import Navbar from '@/components/Navbar';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Navbar from "@/components/Navbar";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import {
+    User, Mail, Calendar, BookOpen, Edit2,
+    Instagram, Linkedin, Twitter, Share2
+} from "lucide-react";
 
 export default function ProfilePage() {
     const { data: session } = useSession();
@@ -14,7 +22,7 @@ export default function ProfilePage() {
         async function fetchProfile() {
             if (session?.user?.email) {
                 try {
-                    const res = await fetch('/api/user/profile');
+                    const res = await fetch("/api/user/profile");
                     if (res.ok) {
                         const data = await res.json();
                         setProfile(data);
@@ -29,62 +37,161 @@ export default function ProfilePage() {
         fetchProfile();
     }, [session]);
 
-    if (loading) return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center"><p>Loading...</p></div>;
-
-    return (
-        <div className="min-h-screen bg-gray-900 text-white">
+    if (loading) return (
+        <div className="min-h-screen bg-[var(--bg-main)]">
             <Navbar />
-            <div className="container mx-auto p-8 pt-24">
-                <h1 className="text-3xl font-bold mb-6">User Profile</h1>
-                <div className="p-8 bg-gray-800 rounded-lg border border-gray-700">
-                    <div className="flex flex-col md:flex-row items-center gap-6 mb-8">
-                        <div className="w-32 h-32 relative">
-                            <img
-                                src={profile?.image || `https://ui-avatars.com/api/?name=${session?.user?.name}&background=10B981&color=fff`}
-                                alt="Profile"
-                                className="w-full h-full rounded-full object-cover border-4 border-green-500 shadow-lg"
-                            />
-                        </div>
-                        <div className="text-center md:text-left">
-                            <h2 className="text-3xl font-bold">{session?.user?.name}</h2>
-                            <p className="text-gray-400">{session?.user?.email}</p>
-                            <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                                <span className="px-3 py-1 bg-blue-900 text-blue-200 rounded-full text-sm font-semibold capitalize border border-blue-700">{profile?.role || 'Student'}</span>
-                                <span className="px-3 py-1 bg-purple-900 text-purple-200 rounded-full text-sm font-semibold capitalize border border-purple-700">{profile?.year || '1st Year'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700">
-                            <h3 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2 text-accent">Academic Details</h3>
-                            <p className="mb-3 flex justify-between"><span className="text-gray-400">Year:</span> <span>{profile?.year || '1st Year'}</span></p>
-                            <p className="mb-3 flex justify-between"><span className="text-gray-400">Branch:</span> <span>{profile?.branch || 'B.Pharm'}</span></p>
-                            <p className="mb-3 flex justify-between"><span className="text-gray-400">Joined:</span> <span>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}</span></p>
-                        </div>
-                        <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-700">
-                            <h3 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2 text-accent">Bio & Socials</h3>
-                            <p className="text-gray-300 italic mb-6 leading-relaxed">"{profile?.bio || 'Passionate pharmacy student.'}"</p>
-
-                            <div className="flex gap-4 mb-6">
-                                {profile?.socials?.instagram && (
-                                    <a href={profile.socials.instagram} target="_blank" className="text-pink-500 hover:text-pink-400 text-2xl"><i className="fab fa-instagram"></i></a>
-                                )}
-                                {profile?.socials?.linkedin && (
-                                    <a href={profile.socials.linkedin} target="_blank" className="text-blue-500 hover:text-blue-400 text-2xl"><i className="fab fa-linkedin"></i></a>
-                                )}
-                                {profile?.socials?.twitter && (
-                                    <a href={profile.socials.twitter} target="_blank" className="text-sky-500 hover:text-sky-400 text-2xl"><i className="fab fa-twitter"></i></a>
-                                )}
-                            </div>
-
-                            <Link href="/settings" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded text-white font-bold inline-block shadow-lg transition-transform transform hover:-translate-y-1">
-                                Edit Profile
-                            </Link>
-                        </div>
-                    </div>
+            <div className="pt-24 container mx-auto px-4 max-w-4xl">
+                <Skeleton className="h-64 w-full rounded-2xl mb-8" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Skeleton className="h-48 w-full rounded-xl" />
+                    <Skeleton className="h-48 w-full rounded-xl" />
                 </div>
             </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-[var(--bg-main)]">
+            <Navbar />
+            <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl">
+
+                {/* Header Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Card className="p-0 overflow-hidden mb-8 border-0 bg-[var(--bg-surface)]">
+                        {/* Banner */}
+                        <div className="h-48 bg-gradient-to-r from-blue-900 via-[var(--accent-primary)] to-emerald-900 opacity-20 relative">
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay"></div>
+                        </div>
+
+                        <div className="px-8 pb-8 flex flex-col md:flex-row items-end -mt-16 gap-6">
+                            {/* Avatar */}
+                            <div className="relative">
+                                <div className="h-32 w-32 rounded-full p-1 bg-[var(--bg-main)]">
+                                    <img
+                                        src={profile?.image || `https://ui-avatars.com/api/?name=${session?.user?.name}&background=0ea5e9&color=fff`}
+                                        alt="Profile"
+                                        className="w-full h-full rounded-full object-cover border-4 border-[var(--bg-surface)] bg-[var(--bg-surface-2)]"
+                                    />
+                                </div>
+                                <div className="absolute bottom-2 right-2 bg-green-500 h-5 w-5 rounded-full border-4 border-[var(--bg-surface)]" title="Online" />
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 mb-2">
+                                <h1 className="text-3xl font-bold text-[var(--text-primary)]">{session?.user?.name}</h1>
+                                <p className="text-[var(--text-secondary)] flex items-center gap-2">
+                                    <Mail className="h-4 w-4" /> {session?.user?.email}
+                                </p>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="mb-2 flex gap-3">
+                                <Link href="/settings">
+                                    <Button variant="secondary" className="shadow-lg">
+                                        <Edit2 className="h-4 w-4 mr-2" /> Edit Profile
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    </Card>
+                </motion.div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                    {/* Left Col */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="space-y-6"
+                    >
+                        <Card>
+                            <h3 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4 border-b border-[var(--border-subtle)] pb-2">
+                                Academic Info
+                            </h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs text-[var(--text-secondary)]">Current Year</label>
+                                    <div className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-[var(--accent-primary)]" />
+                                        {profile?.year || "First Year"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[var(--text-secondary)]">Department</label>
+                                    <div className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                        <BookOpen className="h-4 w-4 text-purple-400" />
+                                        {profile?.branch || "B.Pharm"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[var(--text-secondary)]">Role</label>
+                                    <div className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                        <User className="h-4 w-4 text-orange-400" />
+                                        {profile?.role || "Student"}
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card>
+                            <h3 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4 border-b border-[var(--border-subtle)] pb-2">
+                                Socials
+                            </h3>
+                            <div className="flex gap-4">
+                                {profile?.socials?.instagram ? (
+                                    <a href={profile.socials.instagram} target="_blank" className="p-3 bg-pink-500/10 rounded-lg text-pink-400 hover:bg-pink-500 hover:text-white transition-all">
+                                        <Instagram className="h-5 w-5" />
+                                    </a>
+                                ) : <div className="p-3 bg-[var(--bg-surface-2)] rounded-lg text-[var(--text-muted)] opacity-50"><Instagram className="h-5 w-5" /></div>}
+
+                                {profile?.socials?.linkedin ? (
+                                    <a href={profile.socials.linkedin} target="_blank" className="p-3 bg-blue-600/10 rounded-lg text-blue-500 hover:bg-blue-600 hover:text-white transition-all">
+                                        <Linkedin className="h-5 w-5" />
+                                    </a>
+                                ) : <div className="p-3 bg-[var(--bg-surface-2)] rounded-lg text-[var(--text-muted)] opacity-50"><Linkedin className="h-5 w-5" /></div>}
+
+                                {profile?.socials?.twitter ? (
+                                    <a href={profile.socials.twitter} target="_blank" className="p-3 bg-sky-500/10 rounded-lg text-sky-400 hover:bg-sky-500 hover:text-white transition-all">
+                                        <Twitter className="h-5 w-5" />
+                                    </a>
+                                ) : <div className="p-3 bg-[var(--bg-surface-2)] rounded-lg text-[var(--text-muted)] opacity-50"><Twitter className="h-5 w-5" /></div>}
+                            </div>
+                        </Card>
+                    </motion.div>
+
+                    {/* Right Col */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="md:col-span-2"
+                    >
+                        <Card className="h-full">
+                            <h3 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4 border-b border-[var(--border-subtle)] pb-2">
+                                About Me
+                            </h3>
+                            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-line text-lg">
+                                {profile?.bio || "No bio added yet. Click 'Edit Profile' to introduce yourself!"}
+                            </p>
+
+                            <div className="mt-8 p-4 bg-[var(--bg-surface-2)] rounded-xl border border-[var(--border-subtle)] flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-bold text-[var(--text-primary)]">Profile Visibility</h4>
+                                    <p className="text-xs text-[var(--text-secondary)]">Your profile is visible to other students.</p>
+                                </div>
+                                <Button variant="ghost" size="sm"><Share2 className="h-4 w-4 mr-2" /> Share</Button>
+                            </div>
+                        </Card>
+                    </motion.div>
+
+                </div>
+            </main>
         </div>
     );
 }

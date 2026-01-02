@@ -1,214 +1,152 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { User, Mail, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
-    const [step, setStep] = useState<'register' | 'verify'>('register');
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        year: '1st Year',
-    });
-    const [otp, setOtp] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
+        setError("");
+        setIsLoading(true);
 
         try {
-            const res = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password }),
             });
 
             const data = await res.json();
+
             if (res.ok) {
-                setStep('verify');
+                // Redirect to verification
+                router.push(`/verify?email=${encodeURIComponent(email)}`);
             } else {
-                setError(data.message || 'Registration failed');
+                setError(data.message || "Registration failed");
+                setIsLoading(false);
             }
         } catch (error) {
-            console.error(error);
-            setError('Something went wrong');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerify = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            const res = await fetch('/api/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: formData.email, otp }),
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert('Verification successful! You can now login.');
-                router.push('/login');
-            } else {
-                setError(data.message || 'Verification failed');
-            }
-        } catch (error) {
-            console.error(error);
-            setError('Something went wrong');
-        } finally {
-            setLoading(false);
+            setError("Something went wrong");
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
-            <Navbar />
-            <div className="flex items-center justify-center py-20 px-4">
-                <div className="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-                    <h2 className="text-3xl font-bold text-center mb-6">
-                        {step === 'register' ? 'Create Account' : 'Verify Email'}
-                    </h2>
-
-                    {error && (
-                        <div className="bg-red-500/20 border border-red-500 text-red-100 p-3 rounded mb-4 text-sm text-center">
-                            {error}
-                        </div>
-                    )}
-
-                    {step === 'register' ? (
-                        <form onSubmit={handleRegister} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Full Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    className="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Password</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Year</label>
-                                <select
-                                    name="year"
-                                    value={formData.year}
-                                    onChange={handleChange}
-                                    className="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                >
-                                    <option value="1st Year">1st Year</option>
-                                    <option value="2nd Year">2nd Year</option>
-                                    <option value="3rd Year">3rd Year</option>
-                                    <option value="4th Year">4th Year</option>
-                                </select>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded font-bold transition duration-200 disabled:opacity-50"
+        <div className="min-h-screen flex bg-[var(--bg-main)]">
+            {/* Left: Brand / Visual */}
+            <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center p-12">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[var(--bg-surface)] to-[var(--bg-main)] z-10" />
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8 }}
+                    className="relative z-20 max-w-lg"
+                >
+                    <h2 className="text-3xl font-bold text-white mb-6">Join the Community</h2>
+                    <div className="space-y-6">
+                        {[
+                            "Access premium pharmacy notes",
+                            "Track your academic progress",
+                            "Connect with resources & mentors",
+                            "Secure & private profile"
+                        ].map((item, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 + (idx * 0.1) }}
+                                className="flex items-center space-x-4 bg-white/5 p-4 rounded-xl backdrop-blur-sm border border-white/10"
                             >
-                                {loading ? 'Registering...' : 'Register'}
-                            </button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleVerify} className="space-y-6">
-                            <div>
-                                <p className="text-gray-400 text-sm mb-4 text-center">
-                                    We sent a 6-digit code to <strong>{formData.email}</strong>.
-                                </p>
-                                <label className="block text-sm font-medium text-gray-400">Enter OTP</label>
-                                <input
-                                    type="text"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    placeholder="123456"
-                                    className="w-full mt-1 p-3 text-center bg-gray-700 border border-gray-600 rounded text-white text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    maxLength={6}
-                                    required
-                                />
-                            </div>
+                                <CheckCircle2 className="h-6 w-6 text-[var(--accent-primary)]" />
+                                <span className="text-[var(--text-primary)] font-medium">{item}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold transition duration-200 disabled:opacity-50"
-                            >
-                                {loading ? 'Verifying...' : 'Verify Email'}
-                            </button>
+                {/* Background Decor */}
+                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]" />
+            </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setStep('register')}
-                                className="w-full text-sm text-gray-400 hover:text-white"
-                            >
-                                Back to Registration
-                            </button>
-                        </form>
-                    )}
-
-                    {step === 'register' && (
-                        <p className="mt-4 text-center text-gray-400">
-                            Already have an account?{' '}
-                            <Link href="/login" className="text-green-400 hover:underline">
-                                Login
-                            </Link>
+            {/* Right: Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="w-full max-w-md space-y-8"
+                >
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-3xl font-bold text-[var(--text-primary)]">Create Account</h2>
+                        <p className="mt-2 text-[var(--text-secondary)]">
+                            Begin your journey with PharmaElevate today.
                         </p>
-                    )}
-                </div>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <Input
+                            type="text"
+                            label="Full Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="John Doe"
+                            icon={<User className="h-5 w-5" />}
+                            required
+                        />
+                        <Input
+                            type="email"
+                            label="Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="name@example.com"
+                            icon={<Mail className="h-5 w-5" />}
+                            required
+                        />
+                        <Input
+                            type="password"
+                            label="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            icon={<Lock className="h-5 w-5" />}
+                            required
+                        />
+
+                        {error && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg">
+                                {error}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            size="lg"
+                            isLoading={isLoading}
+                        >
+                            Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </form>
+
+                    <p className="mt-8 text-center text-sm text-[var(--text-secondary)]">
+                        Already have an account?{" "}
+                        <Link href="/login" className="font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors">
+                            Log in
+                        </Link>
+                    </p>
+                </motion.div>
             </div>
         </div>
     );
