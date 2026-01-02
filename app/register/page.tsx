@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [phone, setPhone] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -25,7 +26,7 @@ export default function RegisterPage() {
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({ name, email, password, phone }),
             });
 
             const data = await res.json();
@@ -112,6 +113,15 @@ export default function RegisterPage() {
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="name@example.com"
                             icon={<Mail className="h-5 w-5" />}
+                            required
+                        />
+                        <Input
+                            type="tel"
+                            label="Phone Number"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="+91 98765 43210"
+                            icon={<User className="h-5 w-5" />}
                             required
                         />
                         <Input
