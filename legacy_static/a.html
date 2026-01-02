@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenCapsule – Pharmacy Project Showcase</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif;}
+body {background:#f5f8ff; color:#333; line-height:1.6; overflow-x:hidden;}
+header.hero{position:relative;overflow:hidden;text-align:center;background: linear-gradient(135deg,#3b82f6,#9333ea);color:white;padding:5rem 1.5rem 4rem;border-bottom-left-radius:2rem;border-bottom-right-radius:2rem;}
+header.hero h1{font-size:3rem;font-weight:700;letter-spacing:1px;position:relative; z-index:2; animation:slideIn 1.2s ease-out;}
+header.hero p{font-size:1.1rem;opacity:0.9;margin-bottom:1.5rem;position:relative; z-index:2;animation:fadeIn 1.5s ease-out;}
+header.hero .btn{display:inline-block;padding:0.7rem 1.5rem;border-radius:50px;background:white;color:#3b82f6;font-weight:600;font-size:0.95rem;transition:all 0.3s ease;position:relative; z-index:2;box-shadow:0 4px 15px rgba(0,0,0,0.2);}
+header.hero .btn:hover{ background:#222; color:white; transform:scale(1.05);}
+@keyframes slideIn{0%{opacity:0; transform:translateY(-40px);}100%{opacity:1; transform:translateY(0);}}
+@keyframes fadeIn{0%{opacity:0;}100%{opacity:1;}}
+header.hero .circle{position:absolute;border-radius:50%;opacity:0.15; animation:float 10s infinite ease-in-out;}
+.circle1{width:200px;height:200px;top:-50px;left:-50px;background:#60a5fa;}
+.circle2{width:250px;height:250px;bottom:-100px;right:-100px;background:#c084fc;}
+.circle3{width:120px;height:120px;top:15%;right:8%;background:#9333ea;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-20px);}}
+.section-title{text-align:center;font-size:1.8rem;margin:2rem 0 1.5rem;color:#222;font-weight:600;}
+.container{display:grid; gap:1.5rem; padding:0 1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));}
+.card{background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius:1.2rem;padding:1rem; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.1); transition:transform 0.3s ease;position:relative;cursor:pointer;}
+.card:hover{transform:translateY(-6px);}
+.card img{width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:0.8rem;border:3px solid #3b82f6;}
+.card h3{margin:0.3rem 0; font-size:1.1rem; font-weight:600; color:#004aad;}
+.card p{font-size:0.9rem; color:#555; margin:0.3rem 0;}
+.card .insta{display:inline-block;margin-top:0.5rem;color:#e1306c;font-weight:500;font-size:0.85rem;}
+.card .insta:hover{color:#3b82f6; cursor:pointer;}
+.role-tag{display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; margin-bottom:5px; color:white;}
+.project-card .details{display:none;margin-top:5px;color:#333;font-size:0.9rem;}
+footer{text-align:center;padding:1.2rem;background:#3b82f6;color:white;margin-top:2rem;border-radius:1rem 1rem 0 0;}
+#popup{position:fixed; top:15px; left:50%; transform:translateX(-50%); background:#ff4d4f; color:white; padding:12px 20px; border-radius:10px; font-size:0.95rem; z-index:9999; opacity:0; transition:opacity 0.3s ease;}
+@media(max-width:1024px){ header.hero h1{font-size:2.5rem;} header.hero p{font-size:1rem;} }
+@media(max-width:768px){ header.hero{padding:4rem 1rem 3rem;} .circle1,.circle2,.circle3{display:none;} .container{grid-template-columns:1fr;} }
+</style>
+</head>
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+
+<div id="popup">Action not allowed: Content is protected!</div>
+<script>
+document.addEventListener('keydown', function(e){
+  if(e.ctrlKey && (e.key==='s' || e.key==='p' || e.key==='u')){ showPopup(); e.preventDefault(); }
+});
+function showPopup(){ const p=document.getElementById('popup'); p.style.opacity='1'; setTimeout(()=>{p.style.opacity='0';},2000);}
+function toggleDetails(card){ const d=card.querySelector('.details'); if(d.style.display==='block'){d.style.display='none';}else{d.style.display='block';}}
+</script>
+
+<header class="hero">
+  <div class="circle circle1"></div>
+  <div class="circle circle2"></div>
+  <div class="circle circle3"></div>
+  <h1>GenCapsule</h1>
+  <p>Innovative Pharmacy Projects – Poster & Kidney Model Showcase</p>
+  <a href="#team" class="btn">Meet the Team</a>
+</header>
+
+<section class="projects">
+  <h2 class="section-title">Our Projects</h2>
+  <div class="container">
+    <div class="card project-card" onclick="toggleDetails(this)">
+      <h3>Poster: Role of Pharmacy in Public Health</h3>
+      <div class="details">A creative poster highlighting pharmacy's role in public health, medicine safety, and patient awareness. Team members collaborated in research, design, and execution.</div>
+    </div>
+    <div class="card project-card" onclick="toggleDetails(this)">
+      <h3>Model: Human Kidney Structure</h3>
+      <div class="details">An academic 3D kidney model demonstrating structure, function, and relevance in pharmacy education. Team members contributed collaboratively to ensure precision and accuracy.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">Our Mentors</h2>
+  <div class="container mentors">
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/scp.jpg?raw=true" alt="HOD Sumit Singh">
+      <h3>Prof. Sumit Singh</h3>
+      <p>Head of Department – Guiding with wisdom and motivation, a true source of inspiration.</p>
+    </div>
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/scp.jpg?raw=true" alt="Prof. Mohammad Imran">
+      <h3>Prof. Mohammad Imran</h3>
+      <p>Professor – Encouraged the team to push boundaries and supported throughout the project.</p>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <h2 class="section-title">Meet the GenCapsule Team</h2>
+  <div class="container members">
+
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/sanpfp.jpg?raw=true" alt="Sanket Kumar">
+      <h3>Sanket Kumar</h3>
+      <div class="role-tag" style="background: linear-gradient(90deg,#f97316,#facc15);">Poster Designer & Model Support</div>
+      <p>Designed the poster creatively and supported kidney model development for precision and clarity.</p>
+      <a href="#" class="insta">Insta: (Update soon)</a>
+    </div>
+
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/adipfp.jpg?raw=true" alt="Aditya Rav">
+      <h3>Aditya Rav</h3>
+      <div class="role-tag" style="background: linear-gradient(90deg,#10b981,#3b82f6);">Model Creator</div>
+      <p>Built the kidney model with precision and attention to detail for scientific accuracy.</p>
+      <a href="https://instagram.com/gzp5675" class="insta" target="_blank">@gzp5675</a>
+    </div>
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/sandpfp.jpg?raw=true" alt="Sandeep Kumar">
+      <h3>Sandeep Kumar</h3>
+      <div class="role-tag" style="background: linear-gradient(90deg,#ef4444,#f97316);">Contributor</div>
+      <p>Actively contributed in multiple areas of the project. A reliable team player always ready to support everyone.</p>
+      <a href="https://instagram.com/Sandeep_sks563" class="insta" target="_blank">@Sandeep_sks563</a>
+    </div>
+
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/sakpfp1.jpg?raw=true" alt="Saksham Gupta">
+      <h3>Saksham Gupta</h3>
+      <div class="role-tag" style="background: linear-gradient(90deg,#8b5cf6,#3b82f6);">Website & Model Support</div>
+      <p>Assisted in website enhancements and model development. A collaborative teammate with problem-solving skills.</p>
+      <a href="https://instagram.com/sakshamguptax" class="insta" target="_blank">@sakshamguptax</a>
+    </div>
+
+    <div class="card">
+      <img src="https://github.com/Ayuxhgpt/PharmaElevate/blob/main/assists/ayupfp.jpg?raw=true" alt="Ayush Gupta">
+      <h3>Ayush Gupta</h3>
+      <div class="role-tag" style="background: linear-gradient(90deg,#3b82f6,#9333ea);">Website Developer & Model Support</div>
+      <p>Developed the entire project website and provided support in model creation. A visionary with dedication to innovation.</p>
+      <a href="https://instagram.com/hey.ayyuuu" class="insta" target="_blank">@hey.ayyuuu</a>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 GenCapsule Project | Created with passion by our team</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+[
+    {
+        "drug1": "Aspirin",
+        "drug2": "Warfarin",
+        "severity": "High",
+        "description": "Increased risk of bleeding due to additive anticoagulant effects."
+    },
+    {
+        "drug1": "Tetracycline",
+        "drug2": "Antacids",
+        "severity": "Moderate",
+        "description": "Reduced absorption of Tetracycline due to chelation."
+    },
+    {
+        "drug1": "Sildenafil",
+        "drug2": "Nitrates",
+        "severity": "Severe",
+        "description": "Risk of severe hypotension (low blood pressure)."
+    },
+    {
+        "drug1": "Paracetamol",
+        "drug2": "Alcohol",
+        "severity": "Moderate",
+        "description": "Increased risk of liver toxicity."
+    }
+]

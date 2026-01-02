@@ -1,0 +1,86 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import cloudinary from '@/lib/cloudinary';
+import dbConnect from '@/lib/db';
+import Image from '@/models/Image';
+import { authOptions } from '../auth/[...nextauth]/route';
+
+export async function POST(req: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const formData = await req.formData();
+        const file = formData.get('file') as Blob;
+        const albumId = formData.get('albumId') as string;
+        const caption = formData.get('caption') as string;
+        if (!file) {
+            return NextResponse.json({ error: 'Missing file' }, { status: 400 });
+        }
+
+        // 1. Size Limit (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File size too large (Max 10MB)' }, { status: 400 });
+        }
+
+        // Determine folder & Validate Type
+        let folder = explicitFolder || 'pharma_elevate_misc';
+        if (albumId) {
+            folder = 'pharma_elevate_albums';
+            if (!file.type.startsWith('image/')) {
+                return NextResponse.json({ error: 'Only images allowed for albums' }, { status: 400 });
+            }
+        }
+
+        if (folder === 'pharma_elevate_notes') {
+            if (file.type !== 'application/pdf') {
+                return NextResponse.json({ error: 'Only PDF allowed for notes' }, { status: 400 });
+            }
+        }
+
+        if (folder === 'pharma_elevate_profiles') {
+            if (!file.type.startsWith('image/')) {
+                return NextResponse.json({ error: 'Only images allowed for profile' }, { status: 400 });
+            }
+        }
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        // Upload to Cloudinary stream
+        const uploadResult: any = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                { folder },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            ).end(buffer);
+        });
+
+        // If generic upload (no album), just return URL
+        if (!albumId) {
+            return NextResponse.json({
+                url: uploadResult.secure_url,
+                public_id: uploadResult.public_id
+            }, { status: 200 });
+        }
+
+        await dbConnect();
+
+        const newImage = await Image.create({
+            imageUrl: uploadResult.secure_url,
+            publicId: uploadResult.public_id,
+            albumId,
+            uploadedBy: (session.user as any).id,
+            caption,
+            isApproved: (session.user as any).role === 'admin', // Auto-approve if admin
+        });
+
+        return NextResponse.json(newImage, { status: 201 });
+    } catch (error) {
+        console.error('Upload error:', error);
+        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    }
+}

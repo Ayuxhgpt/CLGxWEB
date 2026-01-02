@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Download Button</title>
+<style>
+body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Toggle-style animated download button */
+.download-btn {
+    position: relative;
+    display: inline-block;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #fff;
+    background: linear-gradient(45deg, #ff4800, #ffcc00, #ff4800);
+    background-size: 300% 300%;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 15px rgba(255, 120, 50, 0.7), 0 0 30px rgba(255, 80, 0, 0.5);
+    animation: gradientMove 3s ease infinite;
+}
+
+.download-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0));
+    transform: skewX(-25deg);
+    transition: all 0.5s;
+}
+
+.download-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 180, 80, 0.9), 0 0 50px rgba(255, 100, 0, 0.7);
+}
+
+.download-btn:hover::after {
+    left: 150%;
+}
+
+.download-btn.active {
+    animation: pulseGlow 1s infinite alternate;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 20px rgba(255,120,50,0.7), 0 0 40px rgba(255,80,0,0.5); }
+    100% { box-shadow: 0 0 35px rgba(255,180,80,0.9), 0 0 60px rgba(255,100,0,0.7); }
+}
+</style>
+</head>
+<body>
+
+<a href="https://raw.githubusercontent.com/Ayuxhgpt/PharmaElevate/main/PosterForWebsite_203501_0000.pdf" 
+   download 
+   class="download-btn" 
+   id="downloadBtn">
+   📥 Download Poster
+</a>
+
+<script>
+const btn = document.getElementById('downloadBtn');
+
+// Toggle animation on click for fun
+btn.addEventListener('mousedown', () => btn.classList.add('active'));
+btn.addEventListener('mouseup', () => btn.classList.remove('active'));
+btn.addEventListener('mouseleave', () => btn.classList.remove('active'));
+btn.addEventListener('touchstart', () => btn.classList.add('active'), {passive: true});
+btn.addEventListener('touchend', () => btn.classList.remove('active'));
+</script>
+
+</body>
+</html>

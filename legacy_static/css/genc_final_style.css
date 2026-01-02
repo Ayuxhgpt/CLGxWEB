@@ -1,0 +1,10 @@
+/* GenCapsule FINAL Theme Module (genc_final_style.css) */
+/* The ultimate polished look */
+
+.hero h1 {
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+
+.card {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pharma Knowledge — PharmaElevate</title>
+
+  <!-- SEO -->
+  <meta name="description" content="PharmaElevate — Core pharmacology concepts, drug profiles, safe use, pharmacovigilance, clinical trials, AI in drug discovery and career guidance for B.Pharm students." />
+  <meta name="keywords" content="Pharmacy Education, Pharmacology, Pharmacovigilance, Telepharmacy, AI Drug Discovery, Clinical Trials, B.Pharm, Satyadev College of Pharmacy" />
+  <meta name="author" content="Ayush Gupta, Saksham Gupta" />
+
+  <!-- Fonts & icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <!-- Site styles (main theme) -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Small page-specific styles (accordion, code blocks, tables, highlights) -->
+  <style>
+    /* pharma.html additions */
+    .container-narrow { max-width: 980px; margin: 0 auto; padding: 28px; }
+    .section { padding: 44px 20px; }
+    .section h2 { color: var(--deep); margin-bottom: 14px; }
+    .lead { color: var(--muted); margin-bottom: 18px; }
+
+    /* DETAILS / SUMMARY ACCORDION */
+    details { background:var(--card); border-radius:12px; padding:14px 16px; margin:12px 0; box-shadow:0 10px 30px rgba(20,30,60,0.04); }
+    summary { cursor:pointer; font-weight:600; outline:none; font-size:1.05rem; display:flex; align-items:center; gap:10px; }
+    summary::-webkit-details-marker { display:none; }
+    details[open] { transform: translateY(-3px); transition: transform .18s ease; }
+    .accordion-body { margin-top:10px; color:var(--muted); line-height:1.55; }
+
+    /* small table */
+    .drug-table { width:100%; border-collapse:collapse; margin-top:12px; }
+    .drug-table th, .drug-table td { border:1px solid #e7eef7; padding:10px; text-align:left; }
+    .drug-table th { background:#fbfdff; color:var(--deep) }
+
+    /* code / formula */
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; background:#f5f9ff; padding:6px 8px; border-radius:6px; color:var(--deep); }
+
+    /* cards grid for drug profiles */
+    .profiles-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:14px; }
+    .profile { background:var(--card); padding:14px; border-radius:12px; box-shadow:0 10px 26px rgba(20,30,60,0.04); }
+    .profile h4 { margin:6px 0; color:var(--deep); }
+
+    /* callout */
+    .callout { background: linear-gradient(90deg,#fff8e6,#fefefe); border-left:4px solid #ffb020; padding:12px 14px; border-radius:10px; margin:12px 0; color:#5a4724; }
+
+    /* references */
+    .refs{font-size:0.95rem; color:var(--muted); margin-top:18px}
+    .refs a{color:var(--deep)}
+  </style>
+</head>
+<body>
+  <!-- NAVBAR (use the same pattern as index.html) -->
+  <header class="nav-glass" id="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assists/scp.jpg?raw=true" alt="Satyadev College Logo">
+        <div>
+          <div class="brand-title">PharmaElevate</div>
+          <div class="brand-sub">Satyadev College of Pharmacy</div>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="pharma.html" class="active">Pharma Knowledge</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="#research">Research</a>
+        <a href="#developers">Developers</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <button id="menuBtn" class="menu-btn" aria-label="Toggle menu"><i class="fa fa-bars"></i></button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" style="padding:56px 20px 36px;">
+    <div class="hero-inner container-narrow" style="text-align:left;color:white;">
+      <h1 style="font-size:2rem; margin-bottom:6px">Pharma Knowledge — Complete Guide for B.Pharm</h1>
+      <p class="lead" style="color:#e8f8f5; font-size:1.03rem">
+        Core concepts, drug profiles, safe use, pharmacology basics, clinical insights, and the modern trends shaping pharmacy careers.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+        <a class="btn primary" href="#core">Start Learning</a>
+        <a class="btn ghost" href="#profiles">Drug Profiles</a>
+        <a class="btn ghost" href="gallery.html">Open Gallery</a>
+      </div>
+    </div>
+  </section>
+
+  <main class="container-narrow">
+
+    <!-- TOC -->
+    <nav aria-label="Page sections" style="margin:22px 0;display:flex;gap:10px;flex-wrap:wrap;">
+      <a class="btn ghost" href="#core">Core Concepts</a>
+      <a class="btn ghost" href="#profiles">Drug Profiles</a>
+      <a class="btn ghost" href="#pkpd">PK / PD</a>
+      <a class="btn ghost" href="#trials">Clinical Trials</a>
+      <a class="btn ghost" href="#pv" title="Pharmacovigilance">Pharmacovigilance</a>
+      <a class="btn ghost" href="#trends">Trends</a>
+      <a class="btn ghost" href="#careers">Careers</a>
+    </nav>
+
+    <!-- CORE CONCEPTS -->
+    <section id="core" class="section">
+      <h2>Core Concepts — the foundation</h2>
+      <p class="lead">These are the core ideas every pharmacy student should master: drug–target interactions, ADME, PD (dose–effect), safety margins and interactions.</p>
+
+      <details open>
+        <summary><i class="fa fa-dot-circle"></i> Drug–Target Interaction</summary>
+        <div class="accordion-body">
+          <p>Most drugs produce effects by binding to biological targets (receptors, ion channels, enzymes). Understand agonists (activate receptor), antagonists (block receptor), partial agonists, inverse agonists and allosteric modulators. Receptor occupancy and downstream signalling determine magnitude of response.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><i class="fa fa-vial"></i> Pharmacodynamics (PD)</summary>
+        <div class="accordion-body">
+          <p>PD studies the relationship between drug concentration at the site of action and the resulting effect. Key terms: potency (EC<sub>50</sub>), efficacy (Emax), therapeutic window, and tolerance. Visualise dose–response curves to compare agents.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><i class="fa fa-exchange-alt"></i> Pharmacokinetics (ADME)</summary>
+        <div class="accordion-body">
+          <p>ADME = Absorption, Distribution, Metabolism, Excretion. These determine the time-course and intensity of drug action:</p>
+          <ul>
+            <li><b>Absorption</b> — oral bioavailability, first-pass effect.</li>
+            <li><b>Distribution</b> — volume of distribution (Vd), protein binding differences.</li>
+            <li><b>Metabolism</b> — Phase I (CYP450 oxidation), Phase II (conjugation). Enzyme induction/inhibition cause interactions.</li>
+            <li><b>Excretion</b> — renal (glomerular filtration, tubular secretion) and biliary routes.</li>
+          </ul>
+          <p class="callout"><strong>Tip:</strong> Half-life (t<sub>1/2</sub>) and clearance (Cl) control dosing intervals. Formula (for 1-compartment model): <span class="mono">t1/2 = 0.693 × Vd / Cl</span></p>
+        </div>
+      </details>
+
+      <details>
+        <summary><i class="fa fa-heart"></i> Therapeutic Index & Safety</summary>
+        <div class="accordion-body">
+          <p>The therapeutic index is the ratio between toxic and effective doses. Small TI drugs (e.g., digoxin, lithium) require monitoring. Classify adverse drug reactions (Type A — dose related; Type B — idiosyncratic) and learn reporting pathways.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><i class="fa fa-puzzle-piece"></i> Drug Interactions</summary>
+        <div class="accordion-body">
+          <p>Interactions may be pharmacokinetic (absorption, metabolism via CYP450 induction/inhibition) or pharmacodynamic (additive/antagonistic). Example: grapefruit juice inhibiting CYP3A4 increases levels of some statins; rifampicin induces CYPs and reduces many drug levels.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- DRUG PROFILES -->
+    <section id="profiles" class="section bg-alt">
+      <h2>Drug Profiles — quick reference (select examples)</h2>
+      <p class="lead">Short, exam-friendly profiles — include mechanism, typical adult dose, key side effects, monitoring notes.</p>
+
+      <div class="profiles-grid">
+        <div class="profile">
+          <h4>Paracetamol (Acetaminophen)</h4>
+          <p><b>Class:</b> Analgesic / antipyretic</p>
+          <p><b>Mechanism:</b> central inhibition of COX & modulation of serotonergic pathways (exact MOA incompletely understood)</p>
+          <p><b>Typical dose:</b> 500–1000 mg every 4–6 h (max 4 g/day adult; some guidelines 3 g/day to be safe)</p>
+          <p><b>Key cautions:</b> hepatotoxicity in overdose; reduce dose in severe liver disease; avoid with excessive alcohol.</p>
+        </div>
+
+        <div class="profile">
+          <h4>Ibuprofen</h4>
+          <p><b>Class:</b> NSAID</p>
+          <p><b>Mechanism:</b> nonselective COX inhibitor (reduces prostaglandin synthesis)</p>
+          <p><b>Typical dose:</b> 200–400 mg every 4–6 h (max ~1200 mg OTC; prescription higher under supervision)</p>
+          <p><b>Key cautions:</b> GI bleeding risk, renal impairment; avoid in NSAID-sensitive asthma.</p>
+        </div>
+
+        <div class="profile">
+          <h4>Amoxicillin</h4>
+          <p><b>Class:</b> β-lactam antibiotic</p>
+          <p><b>Mechanism:</b> inhibits bacterial cell wall synthesis</p>
+          <p><b>Typical dose:</b> 250–500 mg every 8 h (varies with infection)</p>
+          <p><b>Key cautions:</b> complete full course; allergy (penicillin hypersensitivity) can be severe; dose adjust in renal impairment.</p>
+        </div>
+
+        <div class="profile">
+          <h4>Metformin</h4>
+          <p><b>Class:</b> Biguanide (antihyperglycemic)</p>
+          <p><b>Mechanism:</b> decreases hepatic gluconeogenesis, improves peripheral insulin sensitivity</p>
+          <p><b>Typical dose:</b> 500 mg BID, titrate to 2 g/day (or per guideline)</p>
+          <p><b>Key cautions:</b> risk of lactic acidosis (rare) in renal impairment; hold before iodinated contrast procedures.</p>
+        </div>
+
+        <div class="profile">
+          <h4>Omeprazole</h4>
+          <p><b>Class:</b> Proton pump inhibitor (PPI)</p>
+          <p><b>Typical dose:</b> 20 mg once daily (varies with indication)</p>
+          <p><b>Key cautions:</b> long-term use associated with B12 / Mg2+ deficiency and fracture risk; step down where possible.</p>
+        </div>
+      </div>
+
+      <p style="margin-top:12px; color:var(--muted)">Tip: convert these profiles into flashcards for quick revision — include dose, contraindications, and one monitoring point for each drug.</p>
+    </section>
+
+    <!-- PK / PD DEEP DIVE -->
+    <section id="pkpd" class="section">
+      <h2>Pharmacokinetics & Pharmacodynamics — deeper look</h2>
+      <div>
+        <details>
+          <summary>Absorption & Bioavailability</summary>
+          <div class="accordion-body">
+            <p>Bioavailability (F) is the fraction of dose reaching systemic circulation. Oral drugs with significant first-pass metabolism (e.g., propranolol) have lower F. Factors affecting absorption: formulation, gastric pH, gastric emptying, food interactions.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Distribution & Volume of Distribution (Vd)</summary>
+          <div class="accordion-body">
+            <p>Vd is a theoretical volume. Drugs that are highly lipophilic or tissue-bound have large Vd (e.g., digoxin). Plasma protein binding (e.g., albumin) reduces free drug; displacements can change free fraction and effect.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Metabolism (Phase I & II)</summary>
+          <div class="accordion-body">
+            <p>CYP450 enzymes (CYP3A4, CYP2D6, CYP2C9, etc.) mediate many phase I reactions. Inducers (rifampicin, phenobarbital) lower co-drug levels; inhibitors (ketoconazole, erythromycin) increase levels — clinically important for narrow-TI drugs.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Clearance & Half-life (practical dosing)</summary>
+          <div class="accordion-body">
+            <p>Clearance (Cl) and Vd determine half-life: <span class="mono">t1/2 = 0.693 × Vd / Cl</span>. Loading doses use Vd, maintenance doses depend on Cl. Example: for a drug with long t1/2, steady state is reached after ~4–5 half-lives.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- CLINICAL TRIALS -->
+    <section id="trials" class="section bg-alt">
+      <h2>Drug Development & Clinical Trials</h2>
+      <p class="lead">Drug development follows discovery → preclinical → clinical phases I–III → regulatory review → Phase IV post-marketing surveillance. Larger trials reveal rarer adverse events and are crucial for safety assessment. See FDA for an official description of phases and regulatory steps.</p>
+
+      <details>
+        <summary>Phases summary</summary>
+        <div class="accordion-body">
+          <ul>
+            <li><b>Phase I:</b> Safety and dose in healthy volunteers (20–80 subjects)</li>
+            <li><b>Phase II:</b> Efficacy & side effects in patients (dozens to hundreds)</li>
+            <li><b>Phase III:</b> Large, pivotal trials (hundreds to thousands) assessing effectiveness & safety across populations</li>
+            <li><b>Phase IV:</b> Post-marketing surveillance (pharmacovigilance)</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="callout">
+        <strong>Why Phase III matters:</strong> Phase III trials collect data on less common adverse events and comparative effectiveness — decisions that inform labeling and clinical practice.
+      </div>
+    </section>
+
+    <!-- PHARMACOVIGILANCE -->
+    <section id="pv" class="section">
+      <h2>Pharmacovigilance — drug safety in the real world</h2>
+      <p class="lead">Pharmacovigilance (PV) is the science and activities related to the detection, assessment, understanding and prevention of adverse drug effects and other drug-related problems. Strong PV helps protect patients and supports public health programs.</p>
+      <details>
+        <summary>How PV works (reporting & signal detection)</summary>
+        <div class="accordion-body">
+          <p>PV includes spontaneous adverse event reporting, active surveillance, data mining of healthcare databases and periodic safety update reports (PSURs). National programs (e.g., WHO PIDM, CDSCO in India) coordinate data collection and signal assessment to detect rare but serious ADRs.</p>
+        </div>
+      </details>
+      <p class="refs">Key source: WHO pharmacovigilance resources (see References below). 0</p>
+    </section>
+
+    <!-- TRENDS -->
+    <section id="trends" class="section bg-alt">
+      <h2>Emerging Trends & Research (concise evidence)</h2>
+
+      <details>
+        <summary>AI in Drug Discovery & Safety</summary>
+        <div class="accordion-body">
+          <p>AI methods (machine learning, deep learning) are used for target discovery, virtual screening, predicting ADMET (absorption, distribution, metabolism, excretion, toxicity) properties, and triaging adverse event signals from large datasets. Recent reviews summarise both the potential and current limitations — AI accelerates lead identification but human validation remains essential. 1</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Telepharmacy & Digital Care</summary>
+        <div class="accordion-body">
+          <p>Telepharmacy enables pharmacists to provide counselling, medication review, and remote monitoring — especially valuable for rural/underserved communities. Systematic reviews show improved access and sometimes improved outcomes when integrated well with clinical teams. 2</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Antibiotic discovery (AI examples)</summary>
+        <div class="accordion-body">
+          <p>AI has been applied successfully in research to predict novel antibiotic candidates (recent high-impact studies mined microbiomes to produce candidate molecules). These are early stage but promising as tools to fight antimicrobial resistance. 3</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- CASE STUDIES -->
+    <section id="cases" class="section">
+      <h2>Case Studies & Clinical Insights</h2>
+      <details>
+        <summary>Polypharmacy in geriatrics</summary>
+        <div class="accordion-body">
+          <p>Older patients commonly take multiple medications — physiologic changes (reduced renal/hepatic function, low albumin) affect PK/PD and increase ADR risk. Regular medication reviews, deprescribing where appropriate, and clinical monitoring (renal function, electrolytes) are essential.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>TB & resistance management</summary>
+        <div class="accordion-body">
+          <p>Tuberculosis treatment uses combination therapy to reduce emergence of resistance. Therapeutic drug monitoring, adherence support and awareness of hepatotoxicity are part of safe TB management in clinical practice.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- CAREERS / WHAT TO LEARN -->
+    <section id="careers" class="section bg-alt">
+      <h2>Career Paths & Skills for B.Pharm Students</h2>
+      <ul class="bullet-points">
+        <li><b>Clinical / Hospital Pharmacy:</b> Patient counselling, drug therapy monitoring, clinical rounds.</li>
+        <li><b>Pharmaceutical Industry:</b> Formulation, production (GMP), quality control/assurance, regulatory affairs.</li>
+        <li><b>Clinical Research & PV:</b> Roles in CROs, PV centers, clinical trial coordination.</li>
+        <li><b>Emerging roles:</b> Data analysis, AI-assisted drug discovery, telepharmacy operations.</li>
+      </ul>
+
+      <h4>Recommended practical skills</h4>
+      <ol>
+        <li>Analytical techniques (HPLC, titration, spectroscopy)</li>
+        <li>Formulation basics & compounding</li>
+        <li>Good documentation (GMP, GLP), SOP writing</li>
+        <li>Basic data literacy (Excel, R/Python for data) — increasingly useful in PV and research</li>
+      </ol>
+    </section>
+
+    <!-- PRACTICAL TIPS -->
+    <section id="tips" class="section">
+      <h2>Practical study & project tips</h2>
+      <ul>
+        <li>Convert drug profiles into <b>one-page flashcards</b> (dose, monitoring, contraindication).</li>
+        <li>Practice writing ADR reports — use fictional cases to learn pharmacovigilance reporting.</li>
+        <li>Join internships (hospitals, industry, CROs) and attend workshops on analytical techniques and clinical research.</li>
+        <li>Follow systematic review articles & WHO guidance for evidence summaries.</li>
+      </ul>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references" class="section bg-alt">
+      <h2>References & Further Reading</h2>
+      <p class="lead">Key authoritative sources used for the research summaries above:</p>
+      <ol class="refs">
+        <li>WHO — Pharmacovigilance: definition, objectives & programme overview. 4</li>
+        <li>Comprehensive review: AI in drug discovery (open review / PMC). 5</li>
+        <li>Telepharmacy reviews & evidence summaries (PMC, MDPI). 6</li>
+        <li>FDA — Drug development & clinical research phases (official guidance). 7</li>
+        <li>Recent news/major study: AI used for discovering candidate antibiotics. 8</li>
+      </ol>
+
+      <p style="margin-top:12px;color:var(--muted)">You can link these directly in your project or expand any section into a full article with citations — tell me which topic (e.g., pharmacovigilance, AI, telepharmacy) and I will generate a full 600–1000 word, referenced article you can drop into `blog.html`.</p>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner container-narrow">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img class="foot-logo" src="assists/scp.jpg?raw=true" alt="logo">
+        <div>
+          <strong>PharmaElevate</strong><br>
+          Satyadev College of Pharmacy — Varanasi
+        </div>
+      </div>
+
+      <div style="text-align:right">
+        <div>© 2025 PharmaElevate — Developed by Ayush & Saksham</div>
+        <div style="margin-top:6px"><a href="https://github.com/Ayuxhgpt" target="_blank" style="color:#fff">GitHub</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Small page script: animate appear on scroll (reuses your site script) -->
+  <script>
+    // Basic intersection observer to add 'appear' class to details and sections
+    document.addEventListener('DOMContentLoaded', () => {
+      const obs = new IntersectionObserver((entries, o) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('appear');
+            o.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll('section, details').forEach(el => obs.observe(el));
+    });
+  </script>
+</body>
+</html>

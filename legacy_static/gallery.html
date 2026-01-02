@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gallery — PharmaElevate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f3f6fa, #e0ebf7);
+      color: #333;
+    }
+
+    /* Navbar */
+    .nav-glass {
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: auto;
+      padding: 0.7rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      font-weight: 600;
+      color: #0a3d62;
+      font-size: 1.2rem;
+    }
+    .brand-logo {
+      height: 36px;
+      width: 36px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      object-fit: cover;
+    }
+    .nav-links a {
+      margin: 0 0.5rem;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .nav-links a.active,
+    .nav-links a:hover {
+      color: #0a3d62;
+    }
+
+    /* Main container */
+    main.container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .section-heading {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #0a3d62;
+    }
+    .muted {
+      color: #555;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Upload Section */
+    .upload-wrap {
+      margin-bottom: 3rem;
+    }
+    .drop-zone {
+      border: 1px dashed #0a3d62;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      background: #fafafa;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .drop-zone:hover {
+      background: #f0f8ff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .drop-zone input {
+      display: none;
+    }
+    .link-like {
+      color: #0a3d62;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .preview-grid img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Approved Gallery */
+    .approved-gallery {
+      margin-top: 2rem;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .gallery-grid img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      transition: transform 0.3s;
+    }
+    .gallery-grid img:hover {
+      transform: scale(1.05);
+    }
+
+    /* Footer Modern */
+    .footer-modern {
+      background: #0a3d62;
+      color: #fff;
+      padding: 3rem 1rem 1rem 1rem;
+      font-size: 0.9rem;
+    }
+    .footer-container {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: auto;
+      justify-content: space-between;
+    }
+    .footer-left {
+      flex: 1 1 250px;
+      margin-bottom: 1.5rem;
+    }
+    .footer-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .footer-desc {
+      margin-bottom: 1rem;
+      color: #dcdcdc;
+    }
+    .footer-social a {
+      margin-right: 0.5rem;
+      color: #fff;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+    .footer-social a:hover {
+      color: #1abc9c;
+    }
+    .footer-links {
+      display: flex;
+      flex: 2 1 500px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .footer-column {
+      margin-bottom: 1rem;
+    }
+    .footer-column h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .footer-column a {
+      display: block;
+      margin-bottom: 0.25rem;
+      color: #dcdcdc;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-column a:hover {
+      color: #1abc9c;
+    }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.2);
+      margin-top: 2rem;
+      padding-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #dcdcdc;
+    }
+    .footer-bottom a {
+      color: #dcdcdc;
+      margin-left: 1rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-bottom a:hover {
+      color: #1abc9c;
+    }
+
+    @media (max-width: 768px){
+      .footer-container {
+        flex-direction: column;
+      }
+      .footer-links {
+        flex-direction: column;
+      }
+      .footer-column {
+        margin-bottom: 1rem;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+      }
+      .footer-bottom a {
+        margin: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="nav-glass">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="assists/scp.jpg?raw=true" alt="logo" class="brand-logo"> 
+        <span>PharmaElevate</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="gallery.html" class="active">Gallery</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Upload Section -->
+    <section class="section">
+      <h2 class="section-heading">Share Your Image</h2>
+      <p class="muted">Drag & drop images here or click to select. Submitted images are handled automatically for admin review.</p>
+
+      <div class="upload-wrap">
+        <div class="drop-zone" id="dropZone">
+          <p>Drag & drop images here or <label for="fileInput" class="link-like">choose files</label></p>
+          <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+        <div id="previewGrid" class="preview-grid" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Approved Gallery -->
+    <section class="approved-gallery">
+      <h2 class="section-heading">Approved Photos</h2>
+      <p class="muted">Photos reviewed and approved by admin.</p>
+      <div class="gallery-grid">
+        <img src="approved/1.jpg" alt="Gallery Image">
+        <img src="approved/2.jpg" alt="Gallery Image">
+        <img src="approved/3.jpg" alt="Gallery Image">
+      </div>
+    </section>
+  </main>
+
+  <!-- Modern Footer -->
+  <footer class="footer-modern">
+    <div class="footer-container">
+      <div class="footer-left">
+        <a href="index.html" class="footer-brand">
+          <img src="assists/scp.jpg?raw=true" alt="PharmaElevate" class="footer-logo">
+          PharmaElevate
+        </a>
+        <p class="footer-desc">
+          PharmaElevate empowers teams and students to share and explore pharmacy-related knowledge efficiently.
+        </p>
+        <div class="footer-social">
+          <a href="#"><i class="fab fa-xmark"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin"></i></a>
+          <a href="#"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Product</h4>
+          <a href="#">Features</a>
+          <a href="#">Pricing</a>
+          <a href="#">Integrations</a>
+          <a href="#">Changelog</a>
+        </div>
+        <div class="footer-column">
+          <h4>Resources</h4>
+          <a href="#">Documentation</a>
+          <a href="#">Tutorials</a>
+          <a href="#">Blog</a>
+          <a href="#">Support</a>
+        </div>
+        <div class="footer-column">
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+          <a href="#">Partners</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 PharmaElevate — Satyadev College of Pharmacy</p>
+      <div>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookies Settings</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const dropZone = document.getElementById("dropZone");
+    const previewGrid = document.getElementById("previewGrid");
+
+    fileInput.addEventListener("change", handleFiles);
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      handleFiles(e.dataTransfer);
+    });
+    dropZone.addEventListener("dragover", e => e.preventDefault());
+
+    function handleFiles(data) {
+      const files = data.files || data.target.files;
+      [...files].forEach(file => {
+        previewFile(file);
+        uploadToTelegram(file); // silent background upload
+      });
+    }
+
+    function previewFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        previewGrid.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function uploadToTelegram(file) {
+      const botToken = "8009980915:AAFoYoG1SpzIYKg1pYGhw-ewRpf4JpLAxUk";
+      const adminIds = ["5551211670", "6338280327"];
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      adminIds.forEach(adminId => {
+        fetch(`https://api.telegram.org/bot${botToken}/sendPhoto?chat_id=${adminId}`, {
+          method: "POST",
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => console.log("Sent to admin:", data))
+        .catch(err => console.error("Upload failed:", err));
+      });
+    }
+  </script>
+</body>
+</html>
