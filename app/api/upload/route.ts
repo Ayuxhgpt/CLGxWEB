@@ -16,6 +16,7 @@ export async function POST(req: Request) {
         const file = formData.get('file') as Blob;
         const albumId = formData.get('albumId') as string;
         const caption = formData.get('caption') as string;
+        const explicitFolder = formData.get('folder') as string;
         if (!file) {
             return NextResponse.json({ error: 'Missing file' }, { status: 400 });
         }
