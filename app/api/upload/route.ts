@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import cloudinary from '@/lib/cloudinary';
 import dbConnect from '@/lib/db';
 import Image from '@/models/Image';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);

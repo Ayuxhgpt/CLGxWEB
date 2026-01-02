@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Album from '@/models/Album';
-import { authOptions } from '../auth/[...nextauth]/route'; // Adjust path if needed for auth options
+import { authOptions } from '@/lib/auth'; // Adjust path if needed for auth options
 
 export async function GET() {
     await dbConnect();
