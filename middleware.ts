@@ -3,7 +3,10 @@ import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET || 'build-time-placeholder-secret'
+    });
     const { pathname } = req.nextUrl;
 
     // Paths requiring Authentication (Student + Admin)
