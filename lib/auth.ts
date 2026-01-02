@@ -54,8 +54,7 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async jwt({ token, user: u }) {
-            const user = u as any;
+        async jwt({ token, user }) {
             if (user) {
                 token.role = user.role;
                 token.id = user.id;
@@ -66,9 +65,9 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (session.user) {
-                (session.user as any).role = token.role;
-                (session.user as any).id = token.id;
-                (session.user as any).isBlocked = token.isBlocked;
+                session.user.role = token.role;
+                session.user.id = token.id;
+                session.user.isBlocked = token.isBlocked;
                 if (token.picture) session.user.image = token.picture;
             }
             return session;
