@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { User, Mail, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, CheckCircle2, Phone } from "lucide-react";
 
 export default function RegisterPage() {
     const [name, setName] = useState("");
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+91 98765 43210"
-                            icon={<User className="h-5 w-5" />}
+                            icon={<Phone className="h-5 w-5" />}
                             required
                         />
                         <Input

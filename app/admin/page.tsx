@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
     Upload, FileText, CheckCircle, XCircle,
-    ShieldAlert, Search, RefreshCw, Calendar
+    ShieldAlert, Search, RefreshCw, Calendar, User
 } from "lucide-react";
 
 interface PendingImage {
