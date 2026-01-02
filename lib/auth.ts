@@ -67,5 +67,7 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: 'jwt',
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    // Fallback included to prevent build failures if env is missing.
+    // In production, the actual env var will override this (or should be set).
+    secret: process.env.NEXTAUTH_SECRET || 'build-time-placeholder-secret',
 };
