@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Image as ImageIcon, Calendar } from "lucide-react";
+import Image from "next/image";
 
 interface Album {
     _id: string;

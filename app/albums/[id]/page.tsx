@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
-    Image as ImageIcon, UploadCloud, ChevronLeft,
-    Calendar, User, X
+    Image as ImageIcon, UploadCloud, ArrowLeft, Calendar, User, Download, Share2, ChevronLeft, X
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -177,10 +177,13 @@ export default function AlbumDetails() {
                                 className="break-inside-avoid"
                             >
                                 <div className="relative group rounded-xl overflow-hidden bg-[var(--bg-surface)] shadow-lg hover:shadow-2xl transition-all duration-300">
-                                    <img
+                                    <Image
                                         src={img.imageUrl}
                                         alt={img.caption}
-                                        className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                        width={800}
+                                        height={600}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                                         <div>

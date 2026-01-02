@@ -24,7 +24,7 @@ export async function GET(req: Request) {
         const skip = (page - 1) * limit;
 
         // Build Query
-        const query: any = {};
+        const query: Record<string, unknown> = {};
 
         if (search) {
             query.$or = [

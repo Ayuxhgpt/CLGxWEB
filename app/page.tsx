@@ -10,6 +10,7 @@ import {
   Download, GraduationCap, PlayCircle, Github, Instagram,
   ArrowRight, ChevronRight
 } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
 
@@ -196,8 +197,8 @@ export default function Home() {
 
             <div className="flex gap-8">
               <div className="text-center md:text-right">
-                <div className="w-16 h-16 mx-auto md:ml-auto mb-3 rounded-full overflow-hidden border-2 border-[var(--border-subtle)]">
-                  <img src="/assists/ayupfp.jpg" alt="Ayush" className="w-full h-full object-cover" />
+                <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-[var(--accent-primary)] mb-4">
+                  <Image src="/assists/ayupfp.jpg" alt="Ayush" width={80} height={80} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="font-bold">Ayush Gupta</h4>
                 <p className="text-xs text-[var(--text-muted)] mb-2">Lead Developer</p>
@@ -207,8 +208,8 @@ export default function Home() {
               </div>
 
               <div className="text-center md:text-right">
-                <div className="w-16 h-16 mx-auto md:ml-auto mb-3 rounded-full overflow-hidden border-2 border-[var(--border-subtle)]">
-                  <img src="/assists/sakpfp.jpg" alt="Saksham" className="w-full h-full object-cover" />
+                <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-[var(--accent-primary)] mb-4">
+                  <Image src="/assists/sakpfp.jpg" alt="Saksham" width={80} height={80} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="font-bold">Saksham Gupta</h4>
                 <p className="text-xs text-[var(--text-muted)] mb-2">Research Lead</p>

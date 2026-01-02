@@ -48,7 +48,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         }
 
         // 3. Execute Action
-        let updateData: any = {};
+        let updateData: { role?: string, isBlocked?: boolean } = {};
         let logMessage = '';
 
         switch (action) {

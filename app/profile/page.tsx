@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Image from "next/image";
 import {
     User, Mail, Calendar, BookOpen, Edit2,
     Instagram, Linkedin, Twitter, Share2
@@ -71,10 +72,13 @@ export default function ProfilePage() {
                             {/* Avatar */}
                             <div className="relative">
                                 <div className="h-32 w-32 rounded-full p-1 bg-[var(--bg-main)]">
-                                    <img
+                                    <Image
                                         src={profile?.image || `https://ui-avatars.com/api/?name=${session?.user?.name}&background=0ea5e9&color=fff`}
                                         alt="Profile"
+                                        width={128}
+                                        height={128}
                                         className="w-full h-full rounded-full object-cover border-4 border-[var(--bg-surface)] bg-[var(--bg-surface-2)]"
+                                        unoptimized
                                     />
                                 </div>
                                 <div className="absolute bottom-2 right-2 bg-green-500 h-5 w-5 rounded-full border-4 border-[var(--bg-surface)]" title="Online" />

@@ -7,10 +7,8 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import {
-    User, Mail, Camera, Instagram, Linkedin, Twitter,
-    Save, ArrowLeft
-} from "lucide-react";
+import { User, Mail, Lock, Shield, Bell, Save, Camera, Github, Twitter, Linkedin, Instagram, ArrowLeft } from "lucide-react";
+import Image from "next/image";
 
 export default function SettingsPage() {
     const [formData, setFormData] = useState({
@@ -136,7 +134,7 @@ export default function SettingsPage() {
                             <div className="relative group cursor-pointer mb-4">
                                 <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-[var(--bg-surface-2)] bg-[var(--bg-main)]">
                                     {formData.image ? (
-                                        <img src={formData.image} alt="Avatar" className="w-full h-full object-cover" />
+                                        <Image src={formData.image} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" unoptimized />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
                                             <User className="h-8 w-8" />

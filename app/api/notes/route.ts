@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
         await dbConnect();
 
-        const query: any = {};
+        const query: Record<string, unknown> = {};
         if (semester) query.semester = semester;
         if (subject) query.subject = subject;
 

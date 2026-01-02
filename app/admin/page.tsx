@@ -13,6 +13,7 @@ import {
     Upload, FileText, CheckCircle, XCircle,
     ShieldAlert, Search, RefreshCw, Calendar, User
 } from "lucide-react";
+import NextImage from "next/image";
 
 interface PendingImage {
     _id: string;
@@ -232,7 +233,7 @@ export default function AdminDashboard() {
                                         >
                                             <Card className="flex gap-4 p-4 items-start">
                                                 <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)]">
-                                                    <img src={img.url} alt="Pending" className="w-full h-full object-cover" />
+                                                    <NextImage src={img.url} alt="Pending" width={80} height={80} className="w-full h-full object-cover" unoptimized />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start mb-1">

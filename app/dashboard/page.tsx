@@ -12,6 +12,7 @@ import {
     Upload, Bookmark, Flame, Layout,
     BookOpen, Image as ImageIcon, Settings, ShieldAlert
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -170,10 +171,13 @@ export default function DashboardPage() {
                             <div className="h-24 bg-gradient-to-r from-[var(--accent-primary)] to-blue-600 opacity-20" />
                             <div className="px-6 pb-6 -mt-12 flex flex-col items-center text-center">
                                 <div className="p-1 bg-[var(--bg-surface)] rounded-full mb-3">
-                                    <img
+                                    <Image
                                         src={userImage}
                                         alt={session?.user?.name || "User"}
-                                        className="w-24 h-24 rounded-full object-cover border-4 border-[var(--bg-surface)]"
+                                        width={96}
+                                        height={96}
+                                        className="w-full h-full rounded-full object-cover border-4 border-[var(--bg-surface)]"
+                                        unoptimized
                                     />
                                 </div>
                                 <h2 className="text-xl font-bold text-[var(--text-primary)]">{session?.user?.name}</h2>
