@@ -54,6 +54,13 @@ const UserSchema = new mongoose.Schema({
         linkedin: { type: String },
         twitter: { type: String },
     },
+    isBlocked: {
+        type: Boolean,
+        default: false,
+    },
+    lastLogin: {
+        type: Date,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

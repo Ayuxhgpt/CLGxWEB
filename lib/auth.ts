@@ -35,20 +35,32 @@ export const authOptions: NextAuthOptions = {
                     throw new Error('Email not verified. Please verify your email.');
                 }
 
+                if (user.isBlocked) {
+                    throw new Error('Account blocked. Contact admin.');
+                }
+
+                // Update last login (fire and forget to avoid blocking login)
+                User.updateOne({ _id: user._id }, { lastLogin: new Date() }).exec();
+
                 return {
                     id: user._id.toString(),
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    image: user.image,
+                    isBlocked: user.isBlocked,
                 };
             },
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user: u }) {
+            const user = u as any;
             if (user) {
                 token.role = user.role;
                 token.id = user.id;
+                token.isBlocked = user.isBlocked;
+                token.picture = user.image;
             }
             return token;
         },
@@ -56,6 +68,8 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 (session.user as any).role = token.role;
                 (session.user as any).id = token.id;
+                (session.user as any).isBlocked = token.isBlocked;
+                if (token.picture) session.user.image = token.picture;
             }
             return session;
         },
