@@ -33,22 +33,35 @@ export default function FacultyPage() {
                                 transition={{ delay: i * 0.1 }}
                             >
                                 <Card className="overflow-hidden flex flex-col md:flex-row h-full">
-                                    <div className="w-full md:w-48 h-48 md:h-auto bg-[var(--bg-surface-2)] relative flex-shrink-0">
-                                        {/* Placeholder generic avatar if no real image */}
-                                        <div className="absolute inset-0 flex items-center justify-center text-[var(--text-muted)]">
-                                            <User className="h-16 w-16" />
+                                    <div className="w-full md:w-48 h-48 md:h-auto bg-[var(--bg-surface-2)] relative flex-shrink-0 group">
+                                        <div className="w-full h-full relative overflow-hidden">
+                                            <img
+                                                src={faculty.image}
+                                                alt={faculty.name}
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center text-[var(--text-muted)] -z-10">
+                                                <User className="h-16 w-16" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="p-6 flex flex-col justify-center w-full">
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1">{faculty.name}</h3>
                                         <p className="text-[var(--primary)] font-medium mb-3">{faculty.role}</p>
 
-                                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-4">
-                                            <GraduationCap className="h-4 w-4" />
-                                            <span>{faculty.qualification}</span>
+                                        <div className="flex flex-col gap-1 text-sm text-[var(--text-secondary)] mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <GraduationCap className="h-4 w-4 text-[var(--text-muted)]" />
+                                                <span>{faculty.qualification}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-[var(--primary)] px-1.5 py-0.5 bg-[var(--primary)]/10 rounded text-xs">Exp</span>
+                                                <span>{faculty.experience}</span>
+                                            </div>
                                         </div>
 
-                                        <p className="text-sm text-[var(--text-muted)] italic leading-relaxed">
+                                        <p className="text-sm text-[var(--text-muted)] italic leading-relaxed border-t border-[var(--border-subtle)] pt-3 mt-auto">
                                             "{faculty.bio}"
                                         </p>
                                     </div>
