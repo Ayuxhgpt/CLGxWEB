@@ -18,47 +18,48 @@ export default function GalleryPage() {
 
                     {/* Pending / Upload Section would go here (Referenced in legacy) */}
 
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
-                        <ImageIcon className="h-6 w-6 text-[var(--primary)]" /> Approved Photos
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {/* Legacy used approved/1.jpg, approved/2.jpg, approved/3.jpg */}
-                        <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                            <img
-                                src="/approved/1.jpg"
-                                alt="Gallery 1"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) parent.style.display = 'none';
-                                }}
-                            />
+                    <section>
+                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+                            <ImageIcon className="h-6 w-6 text-[var(--primary)]" /> Approved Photos
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            {/* Legacy used approved/1.jpg, approved/2.jpg, approved/3.jpg */}
+                            <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <img
+                                    src="/approved/1.jpg"
+                                    alt="Gallery 1"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const parent = e.currentTarget.parentElement;
+                                        if (parent) parent.style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                            <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <img
+                                    src="/approved/2.jpg"
+                                    alt="Gallery 2"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const parent = e.currentTarget.parentElement;
+                                        if (parent) parent.style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                            <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <img
+                                    src="/approved/3.jpg"
+                                    alt="Gallery 3"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const parent = e.currentTarget.parentElement;
+                                        if (parent) parent.style.display = 'none';
+                                    }}
+                                />
+                            </div>
                         </div>
-                        <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                            <img
-                                src="/approved/2.jpg"
-                                alt="Gallery 2"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) parent.style.display = 'none';
-                                }}
-                            />
-                        </div>
-                        <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                            <img
-                                src="/approved/3.jpg"
-                                alt="Gallery 3"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) parent.style.display = 'none';
-                                }}
-                            />
-                        </div>
-                    </div>
-                </section>
-        </div>
+                    </section>
+                </div>
             </main >
         </div >
     );
