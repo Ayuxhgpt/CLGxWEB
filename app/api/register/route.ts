@@ -126,7 +126,25 @@ export async function POST(req: Request) {
         }
 
         // Send OTP
-        await sendVerificationEmail(email, otp);
+        try {
+            console.log(`[AUTH] Sending OTP to ${email} (UserID: ${userId})`);
+            await sendVerificationEmail(email, otp);
+            console.log(`[AUTH] OTP sent successfully to ${email}`);
+        } catch (emailError) {
+            console.error(`[AUTH-CRITICAL] Failed to send OTP email to ${email}. Rolling back user creation.`, emailError);
+
+            // ROLLBACK: Delete the user we just created/updated so they aren't stuck locally without an OTP
+            if (!existingUser) {
+                // Only delete if it was a NEW user. If it was an existing user trying to verify, we just fail the email send but keep the record.
+                await User.findByIdAndDelete(userId);
+                console.log(`[AUTH-CRITICAL] Roleback successful: User ${userId} deleted.`);
+            }
+
+            return NextResponse.json(
+                { message: 'Failed to send verification email. Please try again later.' },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json(
             { message: 'User registered. Please verify your email.', userId, email },

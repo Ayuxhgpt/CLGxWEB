@@ -32,9 +32,18 @@ export async function POST(req: Request) {
         await user.save();
 
         // Send Email
-        await sendVerificationEmail(email, otp);
+        // Send Email
+        try {
+            console.log(`[AUTH-FORGOT] Sending Reset OTP to ${email}`);
+            await sendVerificationEmail(email, otp);
+            console.log(`[AUTH-FORGOT] Reset OTP sent to ${email}`);
 
-        return NextResponse.json({ message: 'OTP sent to your email' }, { status: 200 });
+            return NextResponse.json({ message: 'OTP sent to your email' }, { status: 200 });
+
+        } catch (emailError) {
+            console.error(`[AUTH-CRITICAL] Failed to send Forgot Password OTP to ${email}`, emailError);
+            return NextResponse.json({ message: 'Failed to send OTP. Please try again.' }, { status: 500 });
+        }
 
     } catch (error) {
         console.error("Forgot Password Error:", error);
