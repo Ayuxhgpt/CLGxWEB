@@ -4,12 +4,13 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendVerificationEmail(email: string, otp: string) {
     // DEBUG: Log OTP to console for local testing
-    if (process.env.NODE_ENV !== 'production') {
-        console.log(`\n================================`);
-        console.log(`📧 SENDING EMAIL TO: ${email}`);
-        console.log(`🔐 OTP CODE: ${otp}`);
-        console.log(`================================\n`);
-    }
+    // DEBUG: Logs removed for production security
+    // if (process.env.NODE_ENV !== 'production') {
+    //     console.log(`\n================================`);
+    //     console.log(`📧 SENDING EMAIL TO: ${email}`);
+    //     console.log(`🔐 OTP CODE: ${otp}`);
+    //     console.log(`================================\n`);
+    // }
 
     try {
         const data = await resend.emails.send({

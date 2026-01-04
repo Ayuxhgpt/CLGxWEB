@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, User, LogOut, LayoutDashboard, Image as ImageIcon, BookOpen, Settings } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
@@ -64,6 +65,7 @@ export default function Navbar() {
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-4">
+                    <ThemeToggle />
                     {session ? (
                         <div className="flex items-center gap-3 pl-4 border-l border-[var(--border-subtle)]">
                             <Link href="/dashboard">
@@ -119,7 +121,7 @@ export default function Navbar() {
                                             </Link>
                                             <div className="h-px bg-[var(--border-subtle)] my-2" />
                                             <button
-                                                onClick={() => signOut()}
+                                                onClick={() => signOut({ callbackUrl: '/login' })}
                                                 className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-red-500/10 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer text-left"
                                             >
                                                 <LogOut className="h-4 w-4" /> Sign Out
@@ -178,7 +180,7 @@ export default function Navbar() {
                                         </div>
                                     </Link>
                                     <button
-                                        onClick={() => signOut()}
+                                        onClick={() => signOut({ callbackUrl: '/login' })}
                                         className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors text-left"
                                     >
                                         <LogOut className="h-5 w-5" /> Sign Out

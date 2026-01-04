@@ -22,6 +22,7 @@ export default function AlbumDetails() {
     const [album, setAlbum] = useState<any>(null);
     const [images, setImages] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [albumId, setAlbumId] = useState<string | null>(null);
 
     // Upload Form State
     const [isUploadOpen, setIsUploadOpen] = useState(false);

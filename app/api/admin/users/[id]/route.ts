@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const session = await getServerSession(authOptions);
@@ -39,10 +39,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             // Simplified rule: Only allow if multiple admins exist? 
             // For now: Just allow it but with caution. User spec says: "Cannot demote last remaining admin"
 
-            if (action === 'DEMOTE') {
+            if (action === 'DEMOTE' || action === 'BLOCK') {
                 const adminCount = await User.countDocuments({ role: 'admin' });
-                if (adminCount <= 1) {
-                    return NextResponse.json({ message: 'Cannot demote the last admin' }, { status: 400 });
+                // If blocking an admin, we must treat them as 'removed' from active duty? 
+                // Effectively yes. If only 1 admin exists and we block them, no one can login as admin.
+                if (adminCount <= 1 && (action === 'DEMOTE' || (action === 'BLOCK' && !targetUser.isBlocked))) {
+                    return NextResponse.json({ message: 'Cannot demote or block the last admin' }, { status: 400 });
                 }
             }
         }

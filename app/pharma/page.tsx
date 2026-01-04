@@ -143,7 +143,7 @@ export default function PharmaKnowledge() {
                                 { name: "Amoxicillin", class: "Antibiotic", dose: "250-500 mg", warn: "Penicillin Allergy", color: "text-green-400" },
                                 { name: "Metformin", class: "Biguanide", dose: "500 mg - 2g", warn: "Lactic Acidosis", color: "text-pink-400" },
                             ].map((drug, i) => (
-                                <Card key={i} hoverEffect className="p-5 border-l-4" style={{ borderLeftColor: 'var(--border-subtle)' }}>
+                                <Card key={i} hover className="p-5 border-l-4" style={{ borderLeftColor: 'var(--border-subtle)' }}>
                                     <h4 className={`text-xl font-bold mb-1 ${drug.color}`}>{drug.name}</h4>
                                     <span className="text-xs uppercase tracking-wide text-[var(--text-muted)] font-bold">{drug.class}</span>
                                     <div className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">

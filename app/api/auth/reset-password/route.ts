@@ -14,8 +14,9 @@ export async function POST(req: Request) {
         await dbConnect();
 
         const user = await User.findOne({ email });
+        // Generic error for both user not found and invalid OTP to prevent enumeration
         if (!user) {
-            return NextResponse.json({ message: 'User not found' }, { status: 404 });
+            return NextResponse.json({ message: 'Invalid email or OTP' }, { status: 400 });
         }
 
         // Check Expiry
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
         // Verify OTP
         const isValid = await bcrypt.compare(otp, user.otp);
         if (!isValid) {
-            return NextResponse.json({ message: 'Invalid OTP' }, { status: 400 });
+            return NextResponse.json({ message: 'Invalid email or OTP' }, { status: 400 });
         }
 
         // Hash New Password

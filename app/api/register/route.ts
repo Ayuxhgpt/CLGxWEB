@@ -16,6 +16,23 @@ export async function POST(req: Request) {
             );
         }
 
+        // Strict Email Regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return NextResponse.json(
+                { message: 'Invalid email format' },
+                { status: 400 }
+            );
+        }
+
+        // Password Strength (Min 8 chars, at least one number)
+        if (password.length < 8 || !/\d/.test(password)) {
+            return NextResponse.json(
+                { message: 'Password must be at least 8 characters long and contain a number' },
+                { status: 400 }
+            );
+        }
+
         await dbConnect();
 
         // Check if user already exists

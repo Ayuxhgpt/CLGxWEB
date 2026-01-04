@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/Card";
 import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
@@ -46,60 +47,63 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[var(--bg-main)]">
-            {/* Visual Side */}
-            <div className="hidden lg:flex flex-col justify-center items-center bg-[var(--bg-surface)] p-12 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-600/5 z-0" />
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative z-10 max-w-md"
-                >
-                    <h1 className="text-4xl font-bold mb-6 text-[var(--accent-primary)]">Recover Account</h1>
-                    <p className="text-lg text-[var(--text-secondary)]">
-                        Don't worry, it happens! We'll help you get back to your studies in no time.
-                    </p>
-                </motion.div>
-            </div>
+        <div className="min-h-screen flex items-center justify-center bg-bg relative overflow-hidden p-4">
+            {/* Background Effects */}
+            <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
 
-            {/* Form Side */}
-            <div className="flex flex-col justify-center items-center p-6 lg:p-24 relative">
-                <div className="w-full max-w-sm">
-                    <Link href="/login" className="flex items-center text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-8 transition-colors">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-full max-w-md relative z-10"
+            >
+                <div className="mb-6">
+                    <Link href="/login" className="flex items-center text-sm text-text-muted hover:text-text transition-colors">
                         <ArrowLeft className="h-4 w-4 mr-1" /> Back to Login
                     </Link>
-
-                    <h2 className="text-3xl font-bold mb-2 text-[var(--text-primary)]">Forgot Password?</h2>
-                    <p className="text-[var(--text-secondary)] mb-8">Enter your email to receive a reset code.</p>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <Input
-                            type="email"
-                            label="Email Address"
-                            placeholder="student@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            icon={<Mail className="h-5 w-5" />}
-                            required
-                        />
-
-                        {error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                                {error}
-                            </div>
-                        )}
-                        {message && (
-                            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-sm">
-                                {message}
-                            </div>
-                        )}
-
-                        <Button type="submit" className="w-full" isLoading={isLoading}>
-                            Send OTP <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                    </form>
                 </div>
-            </div>
+
+                <Card glass className="border-text/10 shadow-xl">
+                    <CardHeader>
+                        <h1 className="text-2xl font-bold text-text">Recover Account</h1>
+                        <CardDescription>Enter your email address to receive a verification code.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <Input
+                                type="email"
+                                label="Email Address"
+                                placeholder="student@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                icon={<Mail className="h-4 w-4" />}
+                                required
+                            />
+
+                            {error && (
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+                                    {error}
+                                </div>
+                            )}
+                            {message && (
+                                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-sm">
+                                    {message}
+                                </div>
+                            )}
+
+                            <Button type="submit" className="w-full" isLoading={isLoading}>
+                                Send OTP <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                        </form>
+                    </CardContent>
+                    <CardFooter className="bg-surface/30 pt-6">
+                        <p className="text-xs text-center w-full text-text-muted">
+                            We'll send a 6-digit code to your email.
+                        </p>
+                    </CardFooter>
+                </Card>
+            </motion.div>
         </div>
     );
 }

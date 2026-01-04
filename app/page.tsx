@@ -110,7 +110,7 @@ export default function Home() {
               ].map((item, idx) => (
                 <motion.div key={idx} variants={fadeInUp}>
                   <Link href="/resources">
-                    <Card hoverEffect className="h-full group">
+                    <Card hover className="h-full group">
                       <div className={`mb-4 p-3 rounded-lg bg-white/5 w-fit group-hover:bg-white/10 transition-colors ${item.color}`}>
                         <item.icon className="h-8 w-8" />
                       </div>
@@ -144,7 +144,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Card hoverEffect className="bg-gradient-to-br from-[var(--bg-surface)] to-blue-900/10 border-[var(--border-subtle)]">
+            <Card hover className="bg-gradient-to-br from-[var(--bg-surface)] to-blue-900/10 border-[var(--border-subtle)]">
               <div className="p-4 bg-blue-500/20 rounded-full w-fit mb-6">
                 <BookOpen className="h-8 w-8 text-blue-400" />
               </div>
@@ -155,7 +155,7 @@ export default function Home() {
               </Link>
             </Card>
 
-            <Card hoverEffect className="bg-gradient-to-br from-[var(--bg-surface)] to-[var(--accent-primary)]/10 border-[var(--border-subtle)]">
+            <Card hover className="bg-gradient-to-br from-[var(--bg-surface)] to-[var(--accent-primary)]/10 border-[var(--border-subtle)]">
               <div className="p-4 bg-[var(--accent-primary)]/20 rounded-full w-fit mb-6">
                 <GraduationCap className="h-8 w-8 text-[var(--accent-primary)]" />
               </div>
@@ -166,7 +166,7 @@ export default function Home() {
               </Link>
             </Card>
 
-            <Card hoverEffect className="bg-gradient-to-br from-[var(--bg-surface)] to-purple-900/10 border-[var(--border-subtle)]">
+            <Card hover className="bg-gradient-to-br from-[var(--bg-surface)] to-purple-900/10 border-[var(--border-subtle)]">
               <div className="p-4 bg-purple-500/20 rounded-full w-fit mb-6">
                 <PlayCircle className="h-8 w-8 text-purple-400" />
               </div>

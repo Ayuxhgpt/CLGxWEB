@@ -17,9 +17,8 @@ export async function POST(req: Request) {
 
         const user = await User.findOne({ email });
         if (!user) {
-            // Return success even if user not found for security (prevent enumeration)
-            // But for this project scale, returning 404 is friendlier for students.
-            return NextResponse.json({ message: 'User not found' }, { status: 404 });
+            // Return success even if user not found to prevent enumeration
+            return NextResponse.json({ message: 'If an account exists, an OTP has been sent.' }, { status: 200 });
         }
 
         // Generate OTP

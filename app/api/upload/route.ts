@@ -61,6 +61,13 @@ export async function POST(req: Request) {
             folder = 'pharma_elevate_misc';
         }
 
+        // Global Safety: Only allow Images and PDFs, strictly.
+        // This prevents uploading scripts/executables even to 'misc'
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+        if (!allowedMimeTypes.includes(file.type)) {
+            return NextResponse.json({ error: 'Invalid file type. Only Images and PDFs are allowed.' }, { status: 400 });
+        }
+
         const buffer = Buffer.from(await file.arrayBuffer());
 
         // Upload to Cloudinary stream

@@ -48,6 +48,7 @@ export const config = {
         '/settings/:path*',
         '/albums/upload',
         '/login',
-        '/register'
+        '/register',
+        '/api/admin/:path*'
     ],
 };

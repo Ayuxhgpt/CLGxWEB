@@ -5,13 +5,12 @@ import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
-    Upload, FileText, CheckCircle, XCircle,
-    ShieldAlert, Search, RefreshCw, Calendar, User
+    Upload, FileText, CheckCircle, ShieldAlert, Check, X
 } from "lucide-react";
 import NextImage from "next/image";
 
@@ -42,12 +41,10 @@ export default function AdminDashboard() {
         pdfUrl: ""
     });
     const [uploadingNote, setUploadingNote] = useState(false);
-
     const router = useRouter();
 
     useEffect(() => {
         if (session && session.user.role !== "admin") {
-            // Client-side redirect if not admin
             router.push("/dashboard");
         } else if (session) {
             fetchPending();
@@ -130,92 +127,117 @@ export default function AdminDashboard() {
             <Navbar />
             <main className="container mx-auto px-4 pt-24 pb-12">
 
-                <header className="mb-10 flex items-center gap-4">
-                    <div className="p-3 bg-red-500/10 rounded-xl text-red-500">
+                <motion.header
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-10 flex items-center gap-4"
+                >
+                    <div className="p-3 bg-red-500/10 rounded-xl text-red-500 ring-1 ring-red-500/20">
                         <ShieldAlert className="h-8 w-8" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text-primary)]">Admin Console</h1>
                         <p className="text-[var(--text-secondary)]">Manage content and community submissions.</p>
                     </div>
-                </header>
+                </motion.header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                     {/* Note Upload Panel */}
-                    <section>
-                        <Card className="h-full border-l-4 border-l-blue-500">
-                            <div className="flex items-center gap-3 mb-6 border-b border-[var(--border-subtle)] pb-4">
-                                <Upload className="h-5 w-5 text-blue-400" />
-                                <h2 className="text-xl font-bold text-[var(--text-primary)]">Publish Material</h2>
-                            </div>
-
-                            <form onSubmit={handleNoteUpload} className="space-y-6">
-                                <Input
-                                    label="Title"
-                                    placeholder="e.g. Pharmaceutics Unit 1"
-                                    value={noteForm.title}
-                                    onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
-                                />
-
-                                <div>
-                                    <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Subject</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Pharmacology"
-                                        value={noteForm.subject}
-                                        onChange={(e) => setNoteForm({ ...noteForm, subject: e.target.value })}
-                                        className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl p-3 text-[var(--text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Semester</label>
-                                        <select
-                                            value={noteForm.semester}
-                                            onChange={(e) => setNoteForm({ ...noteForm, semester: e.target.value })}
-                                            className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-xl p-3 text-[var(--text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                        >
-                                            {Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`).map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
+                    <motion.section
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <Card glass className="h-full border-l-4 border-l-blue-500">
+                            <CardHeader className="border-b border-[var(--border-subtle)]/50 pb-4 mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                                        <Upload className="h-5 w-5" />
                                     </div>
+                                    <CardTitle>Publish Material</CardTitle>
+                                </div>
+                                <CardDescription>Upload course notes for students.</CardDescription>
+                            </CardHeader>
+
+                            <CardContent>
+                                <form onSubmit={handleNoteUpload} className="space-y-5">
+                                    <Input
+                                        label="Title"
+                                        placeholder="e.g. Pharmaceutics Unit 1"
+                                        value={noteForm.title}
+                                        onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
+                                        required
+                                    />
+
                                     <div>
-                                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Resource File</label>
-                                        <div className="relative">
-                                            <input
-                                                type="file"
-                                                accept="application/pdf"
-                                                onChange={handlePdfSelect}
-                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                            />
-                                            <div className={`w-full p-3 rounded-xl border border-dashed flex items-center justify-center gap-2 transition-colors ${noteForm.pdfUrl ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-[var(--border-subtle)] bg-[var(--bg-main)] text-[var(--text-muted)]'}`}>
-                                                {noteForm.pdfUrl ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                                                <span className="text-xs font-bold truncate">{noteForm.pdfUrl ? 'Ready to Publish' : 'Select PDF'}</span>
+                                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Subject</label>
+                                        <Input
+                                            type="text"
+                                            placeholder="e.g. Pharmacology"
+                                            value={noteForm.subject}
+                                            onChange={(e) => setNoteForm({ ...noteForm, subject: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Semester</label>
+                                            <select
+                                                value={noteForm.semester}
+                                                onChange={(e) => setNoteForm({ ...noteForm, semester: e.target.value })}
+                                                className="glass-input w-full rounded-md px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            >
+                                                {Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`).map(s => <option key={s} value={s} className="bg-[var(--bg-surface)]">{s}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Resource File</label>
+                                            <div className="relative group cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    onChange={handlePdfSelect}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                                />
+                                                <div className={`w-full p-2.5 rounded-md border border-dashed flex items-center justify-center gap-2 transition-all ${noteForm.pdfUrl ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-[var(--text)/0.2] bg-[var(--surface)/0.5] text-[var(--text-muted)] group-hover:bg-[var(--surface)] group-hover:border-[var(--primary)/0.5]'}`}>
+                                                    {noteForm.pdfUrl ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                                                    <span className="text-sm font-medium truncate">{noteForm.pdfUrl ? 'Ready' : 'Select PDF'}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    disabled={uploadingNote || !noteForm.pdfUrl}
-                                    isLoading={uploadingNote}
-                                >
-                                    Publish Note
-                                </Button>
-                            </form>
+                                    <Button
+                                        type="submit"
+                                        className="w-full"
+                                        disabled={uploadingNote || !noteForm.pdfUrl}
+                                        isLoading={uploadingNote}
+                                    >
+                                        Publish Note
+                                    </Button>
+                                </form>
+                            </CardContent>
                         </Card>
-                    </section>
+                    </motion.section>
 
                     {/* Pending Approvals Panel */}
-                    <section>
-                        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                            Pending Approvals <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded-full">{pendingImages.length}</span>
-                        </h2>
+                    <motion.section
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                Pending Approvals
+                            </h2>
+                            <span className="bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-full border border-[var(--primary)]/20">
+                                {pendingImages.length} Pending
+                            </span>
+                        </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                             <AnimatePresence>
                                 {pendingImages.length === 0 ? (
                                     <EmptyState
@@ -227,40 +249,49 @@ export default function AdminDashboard() {
                                     pendingImages.map((img) => (
                                         <motion.div
                                             key={img._id}
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: "auto" }}
-                                            exit={{ opacity: 0, height: 0 }}
+                                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                            animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                                         >
-                                            <Card className="flex gap-4 p-4 items-start">
-                                                <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)]">
-                                                    <NextImage src={img.url} alt="Pending" width={80} height={80} className="w-full h-full object-cover" unoptimized />
+                                            <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
+                                                <div className="h-24 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm group">
+                                                    <NextImage
+                                                        src={img.url}
+                                                        alt="Pending"
+                                                        width={96}
+                                                        height={96}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        unoptimized
+                                                    />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
+                                                <div className="flex-1 min-w-0 w-full">
                                                     <div className="flex justify-between items-start mb-1">
-                                                        <h4 className="font-bold text-[var(--text-primary)] truncate" title={img.album.title}>{img.album.title}</h4>
-                                                        <span className="text-[10px] bg-[var(--bg-surface-2)] px-2 py-0.5 rounded text-[var(--text-secondary)]">
+                                                        <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={img.album.title}>{img.album.title}</h4>
+                                                        <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
                                                             {new Date(img.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-[var(--text-secondary)] mb-2 italic">"{img.caption || 'No caption'}"</p>
-                                                    <p className="text-xs text-[var(--text-muted)] mb-3">By: {img.uploadedBy.name}</p>
+                                                    <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">"{img.caption || 'No caption'}"</p>
+                                                    <div className="flex items-center justify-between mt-auto">
+                                                        <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{img.uploadedBy.name}</span></p>
 
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            className="h-8 bg-green-600 hover:bg-green-700 text-white border-0"
-                                                            onClick={() => handleAction(img._id, 'approve')}
-                                                        >
-                                                            Approve
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            className="h-8"
-                                                            onClick={() => handleAction(img._id, 'delete')}
-                                                        >
-                                                            Reject
-                                                        </Button>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
+                                                                onClick={() => handleAction(img._id, 'approve')}
+                                                            >
+                                                                <Check className="h-4 w-4 mr-1" /> Approve
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                className="h-8 shadow-lg shadow-red-500/20"
+                                                                onClick={() => handleAction(img._id, 'delete')}
+                                                            >
+                                                                <X className="h-4 w-4 mr-1" /> Reject
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </Card>
@@ -269,7 +300,7 @@ export default function AdminDashboard() {
                                 )}
                             </AnimatePresence>
                         </div>
-                    </section>
+                    </motion.section>
                 </div>
 
             </main>

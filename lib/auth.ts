@@ -21,14 +21,13 @@ export const authOptions: NextAuthOptions = {
 
                 // Find user
                 const user = await User.findOne({ email: credentials.email });
-                if (!user) {
-                    throw new Error('User not found');
-                }
 
-                // Verify password
-                const isValid = await bcrypt.compare(credentials.password, user.password);
-                if (!isValid) {
-                    throw new Error('Invalid password');
+                // Verify password (if user exists)
+                const isValid = user && await bcrypt.compare(credentials.password, user.password);
+
+                // Generic error to prevent enumeration
+                if (!user || !isValid) {
+                    throw new Error('Invalid email or password');
                 }
 
                 if (!user.isVerified) {
