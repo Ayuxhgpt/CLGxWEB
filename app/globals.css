@@ -2,38 +2,69 @@
 
 @layer base {
   :root {
-    /* Light Mode (Base) - Defaulting to user spec */
-    --bg: 255 255 255;
-    --surface: 245 247 250;
-    --text: 15 23 42;
+    /* Default Dark Mode First Strategy */
+    --bg-main: 0 0 0;
+    /* Pure Black #000000 */
+    --bg-surface: 10 10 10;
+    /* Dark Gray #0A0A0A */
+    --bg-card: 17 17 17;
+    /* Card Gray #111111 */
+    --border-subtle: 30 30 30;
+    /* #1E1E1E */
+
+    --text-primary: 255 255 255;
+    /* #FFFFFF */
+    --text-secondary: 161 161 170;
+    /* #A1A1AA (zinc-400) */
+    --text-muted: 113 113 122;
+    /* #71717A (zinc-500) */
+
     --primary: 16 185 129;
-    --bg-glass: 255 255 255; /* Fallback for glass */
+    /* emerald-500 #10b981 */
+    --primary-hover: 5 150 105;
+    /* emerald-600 */
+
+    --danger: 239 68 68;
+
+    /* Preserve for legacy if needed, but override main strategy */
+    --bg: 0 0 0;
+    --text: 255 255 255;
   }
 
-  .dark {
-    /* Dark Mode (Class Strategy) */
-    --bg: 2 6 23;      /* slate-950 */
-    --surface: 15 23 42; /* slate-900 */
-    --text: 226 232 240; /* slate-200 */
-    --primary: 16 185 129; /* emerald-500 */
-    --bg-glass: 2 6 23;
+  /* Light Mode - Optional, mapped to clean distinct values */
+  .light {
+    --bg-main: 255 255 255;
+    --bg-surface: 249 250 251;
+    --bg-card: 255 255 255;
+    --border-subtle: 229 231 235;
+
+    --text-primary: 17 24 39;
+    --text-secondary: 75 85 99;
+    --text-muted: 156 163 175;
+
+    --primary: 16 185 129;
+    --bg: 255 255 255;
+    --text: 17 24 39;
   }
 
   body {
-    @apply bg-[rgb(var(--bg))] text-[rgb(var(--text))] antialiased transition-colors duration-300;
+    @apply bg-[rgb(var(--bg-main))] text-[rgb(var(--text-primary))] antialiased selection:bg-[rgb(var(--primary)/0.3)] selection:text-white;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply backdrop-blur-xl border border-[rgb(var(--text)/0.1)] shadow-xl bg-[rgb(var(--bg-glass)/0.6)];
-  }
-  
-  .glass-input {
-    @apply bg-[rgb(var(--surface)/0.5)] border border-[rgb(var(--text)/0.1)] focus:border-[rgb(var(--primary)/0.5)] focus:ring-[rgb(var(--primary)/0.2)] placeholder-[rgb(var(--text)/0.4)];
+
+  /* Ladder1 Style Utilities - No Blur, Solid Colors */
+  .ladder-card {
+    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-2xl shadow-2xl;
   }
 
-  .glass-navbar {
-    @apply backdrop-blur-md bg-[rgb(var(--bg)/0.8)] border-b border-[rgb(var(--text)/0.05)];
+  .ladder-input {
+    @apply bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border-subtle))] focus:border-[rgb(var(--primary))] focus:ring-1 focus:ring-[rgb(var(--primary))] rounded-xl transition-all duration-200;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-[rgb(var(--text-secondary))];
   }
 }

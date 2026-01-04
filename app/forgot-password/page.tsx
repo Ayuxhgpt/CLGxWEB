@@ -6,8 +6,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/Card";
-import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, Home, Key } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -32,12 +32,12 @@ export default function ForgotPasswordPage() {
             const data = await res.json();
 
             if (res.ok) {
-                setMessage("OTP sent! Redirecting...");
+                setMessage("Reset link sent to your email.");
                 setTimeout(() => {
                     router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-                }, 1500);
+                }, 2000);
             } else {
-                setError(data.message || "Failed to send OTP");
+                setError(data.message || "Failed to send reset link");
                 setIsLoading(false);
             }
         } catch (err) {
@@ -47,62 +47,80 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bg relative overflow-hidden p-4">
-            {/* Background Effects */}
-            <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+        <div className="min-h-screen bg-[rgb(var(--bg-main))] flex items-center justify-center relative overflow-hidden font-sans">
+
+            {/* Top Left Back Button */}
+            <div className="absolute top-6 left-6 z-20">
+                <Link href="/">
+                    <Button variant="secondary" className="rounded-full pl-3 pr-4 h-10 bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))] border-[rgb(var(--border-subtle))] hover:bg-[rgb(var(--bg-card))]">
+                        <Home className="h-4 w-4 mr-2" /> Back to Home
+                    </Button>
+                </Link>
+            </div>
+
+            {/* Background Ambience */}
+            <div className="absolute top-[20%] right-[20%] w-64 h-64 bg-[rgb(var(--primary))] rounded-full blur-[128px] opacity-[0.1] pointer-events-none" />
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-md relative z-10"
+                transition={{ duration: 0.4 }}
+                className="w-full max-w-[480px] p-4 relative z-10"
             >
-                <div className="mb-6">
-                    <Link href="/login" className="flex items-center text-sm text-text-muted hover:text-text transition-colors">
-                        <ArrowLeft className="h-4 w-4 mr-1" /> Back to Login
-                    </Link>
+                <div className="mb-8 text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgb(var(--bg-surface))] border border-[rgb(var(--primary))/0.3] text-[rgb(var(--primary))] text-xs font-semibold mb-6">
+                        <Key className="h-3 w-3" /> Password Recovery
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[rgb(var(--text-primary))] mb-3">
+                        Forgot <span className="text-[rgb(var(--primary))]">Password</span>
+                    </h1>
+                    <p className="text-[rgb(var(--text-secondary))] text-lg">
+                        Enter your email to receive a password reset link
+                    </p>
                 </div>
 
-                <Card glass className="border-text/10 shadow-xl">
-                    <CardHeader>
-                        <h1 className="text-2xl font-bold text-text">Recover Account</h1>
-                        <CardDescription>Enter your email address to receive a verification code.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <Input
-                                type="email"
-                                label="Email Address"
-                                placeholder="student@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                icon={<Mail className="h-4 w-4" />}
-                                required
-                            />
+                <div className="ladder-card p-8 md:p-10 bg-[rgb(var(--bg-card))]">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <Input
+                            type="email"
+                            label="Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            required
+                            className="bg-[rgb(var(--bg-surface))]"
+                        />
 
-                            {error && (
-                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                                    {error}
-                                </div>
-                            )}
-                            {message && (
-                                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-sm">
-                                    {message}
-                                </div>
-                            )}
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm text-center font-medium"
+                            >
+                                {error}
+                            </motion.div>
+                        )}
+                        {message && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="p-3 rounded-lg bg-[rgb(var(--primary))/0.1] border border-[rgb(var(--primary))/0.2] text-[rgb(var(--primary))] text-sm text-center font-medium"
+                            >
+                                {message}
+                            </motion.div>
+                        )}
 
-                            <Button type="submit" className="w-full" isLoading={isLoading}>
-                                Send OTP <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                        </form>
-                    </CardContent>
-                    <CardFooter className="bg-surface/30 pt-6">
-                        <p className="text-xs text-center w-full text-text-muted">
-                            We'll send a 6-digit code to your email.
-                        </p>
-                    </CardFooter>
-                </Card>
+                        <Button type="submit" className="w-full text-base font-bold h-12 rounded-xl" size="lg" isLoading={isLoading}>
+                            Send Reset Link <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                    </form>
+
+                    <div className="mt-8 text-center">
+                        <Link href="/login" className="text-sm text-[rgb(var(--text-secondary))] hover:text-[rgb(var(--text-primary))] font-medium transition-colors">
+                            Back to Login
+                        </Link>
+                    </div>
+                </div>
             </motion.div>
         </div>
     );

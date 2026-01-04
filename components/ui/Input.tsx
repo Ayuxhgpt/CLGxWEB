@@ -13,23 +13,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         return (
             <div className="space-y-2 w-full">
                 {label && (
-                    <label className="text-sm font-medium leading-none text-text/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        {label}
+                    <label className="text-sm font-medium leading-none text-[rgb(var(--text-secondary))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        {label} <span className="text-red-500/80">{props.required ? '*' : ''}</span>
                     </label>
                 )}
-                <div className="relative">
+                <div className="relative group">
                     {icon && (
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgb(var(--text-muted))] transition-colors group-focus-within:text-[rgb(var(--primary))]">
                             {icon}
                         </div>
                     )}
                     <input
                         type={type}
                         className={cn(
-                            "flex h-10 w-full rounded-md border border-text/10 bg-surface/50 px-3 py-2 text-sm ring-offset-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
-                            icon && "pl-10",
-                            error && "border-red-500 focus-visible:ring-red-500",
-                            "glass-input", // Use our global utility
+                            "flex h-12 w-full ladder-input px-4 py-3 text-sm placeholder:text-[rgb(var(--text-muted))] file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50",
+                            icon && "pl-11",
+                            error && "border-red-500/50 focus:border-red-500 focus:ring-red-500",
                             className
                         )}
                         ref={ref}
@@ -37,7 +36,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     />
                 </div>
                 {error && (
-                    <p className="text-sm font-medium text-red-500 animate-in slide-in-from-top-1 fade-in leading-none">
+                    <p className="text-xs font-medium text-red-400 animate-in slide-in-from-top-1 fade-in">
                         {error}
                     </p>
                 )}
