@@ -24,6 +24,10 @@ export default function Navbar() {
 
     const navLinks = [
         { href: "/", label: "Home" },
+        { href: "/college", label: "College" },
+        { href: "/faculty", label: "Faculty" },
+        { href: "/about", label: "About" },
+        { href: "/gallery", label: "Gallery" },
         { href: "/pharma", label: "Knowledge" },
         { href: "/notes", label: "Notes" },
         { href: "/resources", label: "Resources" },

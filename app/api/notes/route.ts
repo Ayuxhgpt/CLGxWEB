@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
         await dbConnect();
 
-        const query: Record<string, unknown> = {};
+        const query: Record<string, unknown> = { status: 'approved' }; // Public API only shows approved notes
         if (semester) query.semester = semester;
         if (subject) query.subject = subject;
 
@@ -29,14 +29,26 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session || session.user.role !== 'admin') {
-            return NextResponse.json({ message: 'Unauthorized. Admin only.' }, { status: 403 });
+        if (!session) {
+            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        const { title, subject, semester, pdfUrl } = await req.json();
+        const body = await req.json();
+        const { title, subject, semester, pdfUrl } = body;
 
         if (!title || !subject || !semester || !pdfUrl) {
             return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
+        }
+
+        // Security: Force 'pending' status for non-admins
+        // Even if admin posts, we default to pending unless explicitly approved in a separate step (conceptually safer)
+        // But here we'll allow admin to post approved notes if they want, otherwise force pending.
+        let status = 'pending';
+        let approvedBy = null;
+
+        if (session.user.role === 'admin' && body.status === 'approved') {
+            status = 'approved';
+            approvedBy = session.user.id;
         }
 
         await dbConnect();
@@ -46,7 +58,10 @@ export async function POST(req: Request) {
             subject,
             semester,
             pdfUrl,
-            uploadedBy: session.user.id, // Handle potential ID field differences
+            uploadedBy: session.user.id,
+            status: status,
+            statusUpdatedAt: new Date(),
+            approvedBy: approvedBy
         });
 
         return NextResponse.json({ message: 'Note created', note: newNote }, { status: 201 });

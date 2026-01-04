@@ -11,6 +11,14 @@ const UserSchema = new mongoose.Schema({
         required: [true, 'Please provide an email'],
         unique: true,
     },
+    username: {
+        type: String,
+        unique: true,
+        trim: true,
+        lowercase: true,
+        sparse: true, // Allow existing users to have null username initially
+        match: [/^[a-z0-9_.]{3,20}$/, 'Username must be 3-20 characters, lowercase, alphanumeric/underscore/dot only.']
+    },
     password: {
         type: String,
         required: [false, 'Password is optional for social login'],

@@ -1,21 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
-import { ArrowRight, Home, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
+import { ArrowRight, Home, Eye, EyeOff, User, Mail, Lock, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function RegisterPage() {
-    const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+    const [form, setForm] = useState({ name: "", username: "", email: "", password: "", confirmPassword: "" });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    // Username Verification State
+    const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+    const [usernameMessage, setUsernameMessage] = useState("");
+
     const router = useRouter();
+
+    // Debounced Username Check
+    useEffect(() => {
+        const checkUsername = async () => {
+            if (!form.username || form.username.length < 3) {
+                setUsernameStatus('idle');
+                setUsernameMessage("");
+                return;
+            }
+
+            const regex = /^[a-z0-9_.]{3,20}$/;
+            if (!regex.test(form.username)) {
+                setUsernameStatus('invalid');
+                setUsernameMessage("Lowercase, alphanumeric, dots, underscores only.");
+                return;
+            }
+
+            setUsernameStatus('checking');
+            try {
+                const res = await fetch(`/api/username/check?username=${form.username}`);
+                const data = await res.json();
+                if (data.available) {
+                    setUsernameStatus('available');
+                    setUsernameMessage("Username is available!");
+                } else {
+                    setUsernameStatus('taken');
+                    setUsernameMessage(data.error || "Username is taken.");
+                }
+            } catch (err) {
+                setUsernameStatus('idle');
+            }
+        };
+
+        const timeoutId = setTimeout(checkUsername, 500);
+        return () => clearTimeout(timeoutId);
+    }, [form.username]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,6 +75,7 @@ export default function RegisterPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: form.name,
+                    username: form.username,
                     email: form.email,
                     password: form.password,
                     role: 'student'
@@ -96,6 +138,24 @@ export default function RegisterPage() {
                             required
                             className="bg-[rgb(var(--bg-surface))]"
                         />
+
+                        <div className="relative">
+                            <Input
+                                label="Username"
+                                value={form.username}
+                                onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().trim() })}
+                                placeholder="john_doe"
+                                required
+                                className={`bg-[rgb(var(--bg-surface))] ${usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-500/50 focus:border-red-500' : usernameStatus === 'available' ? 'border-green-500/50 focus:border-green-500' : ''}`}
+                            />
+                            {usernameStatus === 'checking' && <span className="absolute right-3 top-[34px] text-xs text-[var(--text-muted)]">Checking...</span>}
+                            {usernameStatus === 'available' && <span className="absolute right-3 top-[34px] text-green-500"><CheckCircle className="h-5 w-5" /></span>}
+                            {usernameMessage && (
+                                <p className={`text-xs mt-1 ${usernameStatus === 'available' ? 'text-green-500' : 'text-red-500'}`}>
+                                    {usernameMessage}
+                                </p>
+                            )}
+                        </div>
                         <Input
                             type="email"
                             label="Email Address"

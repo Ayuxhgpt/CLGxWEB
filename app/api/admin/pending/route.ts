@@ -11,11 +11,25 @@ export async function GET() {
     }
 
     await dbConnect();
-    // Populate uploadedBy and albumId for context
-    const pending = await Image.find({ isApproved: false })
+    await dbConnect();
+
+    // Fetch pending images
+    const pendingImages = await Image.find({ isApproved: false })
         .populate('uploadedBy', 'name')
         .populate('albumId', 'title')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
 
-    return NextResponse.json(pending);
+    // Fetch pending notes
+    const Note = (await import('@/models/Note')).default;
+    const pendingNotes = await Note.find({ status: 'pending' })
+        .populate('uploadedBy', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Add type tags for the frontend
+    const images = pendingImages.map((img: any) => ({ ...img, type: 'image' }));
+    const notes = pendingNotes.map((note: any) => ({ ...note, type: 'note' }));
+
+    return NextResponse.json({ images, notes });
 }

@@ -7,9 +7,9 @@ import crypto from 'crypto';
 
 export async function POST(req: Request) {
     try {
-        const { name, email, password, year, phone } = await req.json();
+        const { name, email, password, year, phone, username } = await req.json();
 
-        if (!name || !email || !password || !phone) {
+        if (!name || !email || !password || !phone || !username) {
             return NextResponse.json(
                 { message: 'Missing required fields' },
                 { status: 400 }
@@ -21,6 +21,15 @@ export async function POST(req: Request) {
         if (!emailRegex.test(email)) {
             return NextResponse.json(
                 { message: 'Invalid email format' },
+                { status: 400 }
+            );
+        }
+
+        // Username Regex
+        const usernameRegex = /^[a-z0-9_.]{3,20}$/;
+        if (!usernameRegex.test(username)) {
+            return NextResponse.json(
+                { message: 'Invalid username format' },
                 { status: 400 }
             );
         }
@@ -37,6 +46,15 @@ export async function POST(req: Request) {
 
         // Check if user already exists
         let existingUser = await User.findOne({ email });
+
+        // Check username uniqueness (distinct from email check)
+        const existingUsername = await User.findOne({ username: username.toLowerCase() });
+        if (existingUsername) {
+            // If unverified and same email, we might be overwriting, but if different email has this username, it's taken.
+            if (!existingUser || existingUsername._id.toString() !== existingUser._id.toString()) {
+                return NextResponse.json({ message: 'Username is taken' }, { status: 400 });
+            }
+        }
 
         if (existingUser) {
             if (existingUser.isVerified) {
@@ -60,9 +78,7 @@ export async function POST(req: Request) {
             }
         }
 
-        // Hash password (only if new, but if updating, maybe update password too? 
-        // Let's assume user wants to keep same details or update them. 
-        // For simplicity: If unverified, we update the details with new request body.)
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Generate OTP (6 digits)
@@ -77,6 +93,7 @@ export async function POST(req: Request) {
         if (existingUser) {
             // Update existing unverified user
             existingUser.name = name;
+            existingUser.username = username.toLowerCase(); // Update username
             existingUser.password = hashedPassword;
             existingUser.phone = phone;
             existingUser.year = year || '1st Year';
@@ -88,6 +105,7 @@ export async function POST(req: Request) {
             const newUser = await User.create({
                 name,
                 email,
+                username: username.toLowerCase(),
                 password: hashedPassword,
                 phone,
                 year: year || '1st Year',

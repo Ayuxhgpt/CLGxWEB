@@ -102,13 +102,13 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { title: "Clinical Pharmacy", icon: Stethoscope, desc: "Medication therapy management, patient counselling, and collaborative care.", color: "text-blue-400" },
-                { title: "Industrial Pharmacy", icon: FlaskConical, desc: "Formulation science, GMP, scale-up processes, and quality control.", color: "text-emerald-400" },
-                { title: "Pharmacovigilance", icon: ShieldCheck, desc: "Signal detection, reporting ADRs, and risk minimization strategies.", color: "text-orange-400" },
-                { title: "AI & Digital Pharma", icon: CircuitBoard, desc: "AI in drug discovery, telepharmacy, and digital therapeutics.", color: "text-purple-400" },
+                { title: "Clinical Pharmacy", icon: Stethoscope, desc: "Medication therapy management, patient counselling, and collaborative care.", color: "text-blue-400", link: "/pharma" },
+                { title: "Industrial Pharmacy", icon: FlaskConical, desc: "Formulation science, GMP, scale-up processes, and quality control.", color: "text-emerald-400", link: "/pharma" },
+                { title: "Pharmacovigilance", icon: ShieldCheck, desc: "Signal detection, reporting ADRs, and risk minimization strategies.", color: "text-orange-400", link: "/resources" },
+                { title: "GPAT Prep (Coming Soon)", icon: CircuitBoard, desc: "AI-driven mock tests and study material.", color: "text-purple-400", link: "#" },
               ].map((item, idx) => (
                 <motion.div key={idx} variants={fadeInUp}>
-                  <Link href="/resources">
+                  <Link href={item.link}>
                     <Card hover className="h-full group">
                       <div className={`mb-4 p-3 rounded-lg bg-white/5 w-fit group-hover:bg-white/10 transition-colors ${item.color}`}>
                         <item.icon className="h-8 w-8" />
@@ -192,6 +192,10 @@ export default function Home() {
                 Satyadev College of Pharmacy<br />
                 Elevating education for the future.
               </p>
+              <div className="flex gap-4 mt-4 text-sm font-medium text-[var(--primary)]">
+                <Link href="/college" className="hover:underline">About College</Link>
+                <Link href="/faculty" className="hover:underline">Faculty</Link>
+              </div>
             </div>
 
             <div className="flex gap-8">

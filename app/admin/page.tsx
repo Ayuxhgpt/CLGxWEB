@@ -30,7 +30,8 @@ interface PendingImage {
 
 export default function AdminDashboard() {
     const { data: session } = useSession();
-    const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+    const [pendingData, setPendingData] = useState<{ images: any[]; notes: any[] }>({ images: [], notes: [] });
+    const [activeTab, setActiveTab] = useState<'images' | 'notes'>('images');
     const [loading, setLoading] = useState(true);
 
     // Note Upload State
@@ -55,7 +56,12 @@ export default function AdminDashboard() {
         try {
             const res = await fetch("/api/admin/pending");
             const data = await res.json();
-            setPendingImages(data);
+            // Handle both legacy array (if any) and new object
+            if (Array.isArray(data)) {
+                setPendingData({ images: data, notes: [] });
+            } else {
+                setPendingData({ images: data.images || [], notes: data.notes || [] });
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -63,12 +69,12 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleAction = async (id: string, action: "approve" | "delete") => {
+    const handleAction = async (id: string, action: "approve" | "delete", type: "image" | "note") => {
         try {
             await fetch("/api/admin/approve", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id, action }),
+                body: JSON.stringify({ id, action, type }),
             });
             fetchPending(); // Refresh list
         } catch (error) {
@@ -232,71 +238,141 @@ export default function AdminDashboard() {
                             <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                 Pending Approvals
                             </h2>
-                            <span className="bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-full border border-[var(--primary)]/20">
-                                {pendingImages.length} Pending
-                            </span>
+                            <div className="flex bg-[var(--bg-surface-2)] p-1 rounded-lg">
+                                <button
+                                    onClick={() => setActiveTab('images')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'images' ? 'bg-white text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                >
+                                    Images ({pendingData.images.length})
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('notes')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'notes' ? 'bg-white text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                >
+                                    Notes ({pendingData.notes.length})
+                                </button>
+                            </div>
                         </div>
 
                         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                            <AnimatePresence>
-                                {pendingImages.length === 0 ? (
-                                    <EmptyState
-                                        title="All Caught Up"
-                                        description="There are no pending images to review."
-                                        icon={CheckCircle}
-                                    />
-                                ) : (
-                                    pendingImages.map((img) => (
-                                        <motion.div
-                                            key={img._id}
-                                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                            animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-                                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                        >
-                                            <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
-                                                <div className="h-24 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm group">
-                                                    <NextImage
-                                                        src={img.url}
-                                                        alt="Pending"
-                                                        width={96}
-                                                        height={96}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        unoptimized
-                                                    />
-                                                </div>
-                                                <div className="flex-1 min-w-0 w-full">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={img.album.title}>{img.album.title}</h4>
-                                                        <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
-                                                            {new Date(img.createdAt).toLocaleDateString()}
-                                                        </span>
+                            <AnimatePresence mode="wait">
+                                {activeTab === 'images' ? (
+                                    pendingData.images.length === 0 ? (
+                                        <EmptyState
+                                            key="empty-images"
+                                            title="No Pending Images"
+                                            description="All caught up on image approvals."
+                                            icon={CheckCircle}
+                                        />
+                                    ) : (
+                                        pendingData.images.map((img) => (
+                                            <motion.div
+                                                key={img._id}
+                                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                            >
+                                                <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
+                                                    <div className="h-24 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm group">
+                                                        <NextImage
+                                                            src={img.imageUrl || img.url} // Handle legacy naming if needed
+                                                            alt="Pending"
+                                                            width={96}
+                                                            height={96}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                            unoptimized
+                                                        />
                                                     </div>
-                                                    <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">"{img.caption || 'No caption'}"</p>
-                                                    <div className="flex items-center justify-between mt-auto">
-                                                        <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{img.uploadedBy.name}</span></p>
+                                                    <div className="flex-1 min-w-0 w-full">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={img.album?.title}>{img.album?.title || 'No Album'}</h4>
+                                                            <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
+                                                                {new Date(img.createdAt).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">"{img.caption || 'No caption'}"</p>
+                                                        <div className="flex items-center justify-between mt-auto">
+                                                            <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{img.uploadedBy?.name || 'Unknown'}</span></p>
 
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                size="sm"
-                                                                className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
-                                                                onClick={() => handleAction(img._id, 'approve')}
-                                                            >
-                                                                <Check className="h-4 w-4 mr-1" /> Approve
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                className="h-8 shadow-lg shadow-red-500/20"
-                                                                onClick={() => handleAction(img._id, 'delete')}
-                                                            >
-                                                                <X className="h-4 w-4 mr-1" /> Reject
-                                                            </Button>
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
+                                                                    onClick={() => handleAction(img._id, 'approve', 'image')}
+                                                                >
+                                                                    <Check className="h-4 w-4 mr-1" /> Approve
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    className="h-8 shadow-lg shadow-red-500/20"
+                                                                    onClick={() => handleAction(img._id, 'delete', 'image')}
+                                                                >
+                                                                    <X className="h-4 w-4 mr-1" /> Reject
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </Card>
-                                        </motion.div>
-                                    ))
+                                                </Card>
+                                            </motion.div>
+                                        ))
+                                    )
+                                ) : (
+                                    pendingData.notes.length === 0 ? (
+                                        <EmptyState
+                                            key="empty-notes"
+                                            title="No Pending Notes"
+                                            description="All caught up on note approvals."
+                                            icon={FileText}
+                                        />
+                                    ) : (
+                                        pendingData.notes.map((note) => (
+                                            <motion.div
+                                                key={note._id}
+                                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                            >
+                                                <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
+                                                    <div className="h-24 w-24 flex-shrink-0 flex items-center justify-center rounded-lg bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm">
+                                                        <FileText className="h-10 w-10 text-[var(--primary)]" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 w-full">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={note.title}>{note.title}</h4>
+                                                            <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
+                                                                {new Date(note.createdAt).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-[var(--text-secondary)] line-clamp-1">{note.subject} • {note.semester}</p>
+                                                        <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--primary)] hover:underline mb-3 block">View PDF</a>
+
+                                                        <div className="flex items-center justify-between mt-auto">
+                                                            <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{note.uploadedBy?.name || 'Unknown'}</span></p>
+
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
+                                                                    onClick={() => handleAction(note._id, 'approve', 'note')}
+                                                                >
+                                                                    <Check className="h-4 w-4 mr-1" /> Approve
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    className="h-8 shadow-lg shadow-red-500/20"
+                                                                    onClick={() => handleAction(note._id, 'delete', 'note')}
+                                                                >
+                                                                    <X className="h-4 w-4 mr-1" /> Reject
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </motion.div>
+                                        ))
+                                    )
                                 )}
                             </AnimatePresence>
                         </div>

@@ -24,6 +24,25 @@ const NoteSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending',
+        index: true // For faster admin queries
+    },
+    statusUpdatedAt: {
+        type: Date,
+        default: Date.now
+    },
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    rejectionReason: {
+        type: String,
+        default: null
+    },
     likes: {
         type: Number,
         default: 0
