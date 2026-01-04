@@ -81,6 +81,9 @@ export const authOptions: NextAuthOptions = {
                             password: '', // No password for social
                         });
                     } else {
+                        if (existingUser.isBlocked) {
+                            return false;
+                        }
                         // Link or update existing user
                         if (!existingUser.provider) {
                             existingUser.provider = account.provider;

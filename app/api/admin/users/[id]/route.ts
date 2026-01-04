@@ -27,18 +27,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // 2. Safety Rules
 
+        const SUPER_ADMIN = 'AyushGPT@gmail.com';  // Case-sensitive as stored? Ideally normalize.
+        // Assuming email is stored as is, but logic usually normalizes. 
+        // Let's implement case-insensitive check for reliability.
+
         // Cannot modify self
         if (targetUser._id.toString() === adminUser.id) {
             return NextResponse.json({ message: 'You cannot modify your own account' }, { status: 400 });
         }
 
-        // Cannot Block/Demote other Admins (Prevent War)
-        // Optionally allow Super Admins, but for now, prevent admin-on-admin violence for safety
-        if (targetUser.role === 'admin' && (action === 'BLOCK' || action === 'DEMOTE')) {
-            // Check if there are other admins? 
-            // Simplified rule: Only allow if multiple admins exist? 
-            // For now: Just allow it but with caution. User spec says: "Cannot demote last remaining admin"
+        // PROTECTION: SUPER ADMIN CANNOT BE TOUCHED
+        if (targetUser.email.toLowerCase() === SUPER_ADMIN.toLowerCase()) {
+            return NextResponse.json({ message: 'Super Admin cannot be modified' }, { status: 403 });
+        }
 
+        // AUTHORITY: ONLY SUPER ADMIN CAN PROMOTE/DEMOTE ADMINS
+        if (action === 'PROMOTE' || action === 'DEMOTE') {
+            if (adminUser.email.toLowerCase() !== SUPER_ADMIN.toLowerCase()) {
+                return NextResponse.json({ message: 'Only Super Admin can manage admin roles' }, { status: 403 });
+            }
+        }
+
+        // Cannot Block/Demote other Admins (Prevent War)
+        if (targetUser.role === 'admin' && (action === 'BLOCK' || action === 'DEMOTE')) {
             if (action === 'DEMOTE' || action === 'BLOCK') {
                 const adminCount = await User.countDocuments({ role: 'admin' });
                 // If blocking an admin, we must treat them as 'removed' from active duty? 

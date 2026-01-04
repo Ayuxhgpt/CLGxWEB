@@ -14,7 +14,7 @@ export async function GET() {
     await dbConnect();
 
     // Fetch pending images
-    const pendingImages = await Image.find({ isApproved: false })
+    const pendingImages = await Image.find({ status: 'pending' })
         .populate('uploadedBy', 'name')
         .populate('albumId', 'title')
         .sort({ createdAt: -1 })

@@ -50,9 +50,15 @@ export async function POST(req: Request) {
             if (!image) return NextResponse.json({ error: 'Image not found' }, { status: 404 });
 
             if (action === 'approve') {
-                image.isApproved = true;
+                image.status = 'approved';
+                image.statusUpdatedAt = new Date();
                 await image.save();
                 return NextResponse.json({ message: 'Approved' });
+            } else if (action === 'reject') {
+                image.status = 'rejected';
+                image.statusUpdatedAt = new Date();
+                await image.save();
+                return NextResponse.json({ message: 'Rejected' });
             } else if (action === 'delete') {
                 // Delete from Cloudinary
                 if (image.publicId) {

@@ -11,7 +11,7 @@ import { ArrowRight, Home, Eye, EyeOff, User, Mail, Lock, CheckCircle } from "lu
 import { cn } from "@/lib/utils";
 
 export default function RegisterPage() {
-    const [form, setForm] = useState({ name: "", username: "", email: "", password: "", confirmPassword: "" });
+    const [form, setForm] = useState({ name: "", username: "", email: "", phone: "", password: "", confirmPassword: "" });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -77,6 +77,7 @@ export default function RegisterPage() {
                     name: form.name,
                     username: form.username,
                     email: form.email,
+                    phone: form.phone,
                     password: form.password,
                     role: 'student'
                 }),
@@ -162,6 +163,16 @@ export default function RegisterPage() {
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
                             placeholder="your@email.com"
+                            required
+                            className="bg-[rgb(var(--bg-surface))]"
+                        />
+
+                        <Input
+                            type="tel"
+                            label="Phone Number"
+                            value={form.phone}
+                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                            placeholder="+91 9876543210"
                             required
                             className="bg-[rgb(var(--bg-surface))]"
                         />

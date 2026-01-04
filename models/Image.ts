@@ -23,9 +23,17 @@ const ImageSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
-    isApproved: {
-        type: Boolean,
-        default: false,
+    // isApproved: { type: Boolean, default: false }, // Deprecated
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending',
+    },
+    statusUpdatedAt: {
+        type: Date,
+    },
+    rejectionReason: {
+        type: String,
     },
     createdAt: {
         type: Date,

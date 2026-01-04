@@ -91,14 +91,23 @@ export async function POST(req: Request) {
 
         await dbConnect();
 
-        const newImage = await Image.create({
-            imageUrl: uploadResult.secure_url,
-            publicId: uploadResult.public_id,
-            albumId,
-            uploadedBy: (session.user as any).id,
-            caption: caption || '',
-            isApproved: (session.user as any).role === 'admin', // Auto-approve if admin
-        });
+        let newImage;
+        try {
+            newImage = await Image.create({
+                imageUrl: uploadResult.secure_url,
+                publicId: uploadResult.public_id,
+                albumId,
+                uploadedBy: (session.user as any).id,
+                caption: caption || '',
+                status: (session.user as any).role === 'admin' ? 'approved' : 'pending',
+                statusUpdatedAt: new Date(),
+            });
+        } catch (dbError) {
+            // ROLLBACK: Delete from Cloudinary if DB write fails
+            console.error('DB Create Failed, Rolling back Cloudinary upload...');
+            await cloudinary.uploader.destroy(uploadResult.public_id);
+            throw dbError; // Re-throw to be caught by outer catch
+        }
 
         return NextResponse.json(newImage, { status: 201 });
     } catch (error) {

@@ -34,6 +34,14 @@ export async function POST(req: Request) {
             );
         }
 
+        const reserved = ['admin', 'administrator', 'root', 'support', 'help', 'faculty', 'college', 'pharma', 'pharmaelevate', 'mod', 'moderator'];
+        if (reserved.includes(username.toLowerCase())) {
+            return NextResponse.json(
+                { message: 'Username is reserved' },
+                { status: 400 }
+            );
+        }
+
         // Password Strength (Min 8 chars, at least one number)
         if (password.length < 8 || !/\d/.test(password)) {
             return NextResponse.json(
