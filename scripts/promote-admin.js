@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const fs = require('fs');
+
+// Load .env or .env.local
+const envPath = path.resolve(__dirname, '../.env');
+const localEnvPath = path.resolve(__dirname, '../.env.local');
+
+if (fs.existsSync(localEnvPath)) {
+    require('dotenv').config({ path: localEnvPath });
+} else {
+    require('dotenv').config({ path: envPath });
+}
 
 // Define User Schema inline to avoid TS compilation issues for this script
 const UserSchema = new mongoose.Schema({
