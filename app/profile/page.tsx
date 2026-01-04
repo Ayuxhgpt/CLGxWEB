@@ -58,44 +58,44 @@ export default function ProfilePage() {
 
                 {/* Header Card */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }} /* Ladder1: 10px rise */
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.3 }}
                 >
-                    <Card className="p-0 overflow-hidden mb-8 border-0 bg-[var(--bg-surface)]">
-                        {/* Banner */}
-                        <div className="h-48 bg-gradient-to-r from-blue-900 via-[var(--accent-primary)] to-emerald-900 opacity-20 relative">
-                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay"></div>
+                    <Card className="p-0 overflow-hidden mb-8 border border-[rgb(var(--border-subtle))] bg-[rgb(var(--bg-card))]"> {/* Strict Colors */}
+                        {/* Banner - Subtle Ladder1 Deep Gradient */}
+                        <div className="h-48 bg-gradient-to-r from-zinc-900 to-[rgb(var(--bg-surface))] opacity-50 relative">
+                            {/* No noise needed if background is solid ladder style */}
                         </div>
 
                         <div className="px-8 pb-8 flex flex-col md:flex-row items-end -mt-16 gap-6">
-                            {/* Avatar */}
+                            {/* Avatar - Clean Cut */}
                             <div className="relative">
-                                <div className="h-32 w-32 rounded-full p-1 bg-[var(--bg-main)]">
+                                <div className="h-32 w-32 rounded-full p-1 bg-[rgb(var(--bg-card))]"> {/* Matches Card Bg */}
                                     <Image
-                                        src={profile?.image || `https://ui-avatars.com/api/?name=${session?.user?.name}&background=0ea5e9&color=fff`}
+                                        src={profile?.image || `https://ui-avatars.com/api/?name=${session?.user?.name}&background=10b981&color=fff`} /* Emerald default */
                                         alt="Profile"
                                         width={128}
                                         height={128}
-                                        className="w-full h-full rounded-full object-cover border-4 border-[var(--bg-surface)] bg-[var(--bg-surface-2)]"
+                                        className="w-full h-full rounded-full object-cover border-4 border-[rgb(var(--bg-card))]"
                                         unoptimized
                                     />
                                 </div>
-                                <div className="absolute bottom-2 right-2 bg-green-500 h-5 w-5 rounded-full border-4 border-[var(--bg-surface)]" title="Online" />
+                                <div className="absolute bottom-2 right-2 bg-green-500 h-5 w-5 rounded-full border-4 border-[rgb(var(--bg-card))]" title="Online" />
                             </div>
 
                             {/* Info */}
                             <div className="flex-1 mb-2">
-                                <h1 className="text-3xl font-bold text-[var(--text-primary)]">{session?.user?.name}</h1>
-                                <p className="text-[var(--text-secondary)] flex items-center gap-2">
+                                <h1 className="text-3xl font-bold text-[rgb(var(--text-primary))]">{session?.user?.name}</h1>
+                                <p className="text-[rgb(var(--text-secondary))] flex items-center gap-2">
                                     <Mail className="h-4 w-4" /> {session?.user?.email}
                                 </p>
                             </div>
 
-                            {/* Actions */}
+                            {/* Actions - No Shadows */}
                             <div className="mb-2 flex gap-3">
                                 <Link href="/settings">
-                                    <Button variant="secondary" className="shadow-lg">
+                                    <Button variant="secondary">
                                         <Edit2 className="h-4 w-4 mr-2" /> Edit Profile
                                     </Button>
                                 </Link>

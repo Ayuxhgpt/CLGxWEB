@@ -13,11 +13,18 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Please provide a password'],
+        required: [false, 'Password is optional for social login'],
+    },
+    provider: {
+        type: String,
+        default: 'credentials',
+    },
+    providerId: {
+        type: String,
     },
     phone: {
         type: String,
-        required: [true, 'Please provide a phone number'],
+        required: [false, 'Phone is optional initially'],
     },
     isVerified: {
         type: Boolean,

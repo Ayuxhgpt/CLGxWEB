@@ -28,7 +28,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         className={cn(
                             "flex h-12 w-full ladder-input px-4 py-3 text-sm placeholder:text-[rgb(var(--text-muted))] file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50",
                             icon && "pl-11",
-                            error && "border-red-500/50 focus:border-red-500 focus:ring-red-500",
+                            error && "border-red-500/50 focus:border-red-500 text-red-500 rounded-xl", /* Error state shake handled by parent or animation */
                             className
                         )}
                         ref={ref}

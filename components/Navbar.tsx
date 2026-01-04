@@ -32,8 +32,8 @@ export default function Navbar() {
     return (
         <header
             className={cn(
-                "fixed top-0 w-full z-50 transition-all duration-300 border-b border-transparent",
-                scrolled ? "bg-[var(--bg-main)]/80 backdrop-blur-md border-[var(--border-subtle)] py-3" : "bg-transparent py-5"
+                "fixed top-0 w-full z-50 border-b transition-all duration-300",
+                "bg-[rgb(var(--bg-surface))] border-[rgb(var(--border-subtle))] py-3" /* Ladder1: Always Solid, Always Abyss */
             )}
         >
             <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">

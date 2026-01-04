@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { ArrowRight, Home, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -62,9 +63,9 @@ export default function LoginPage() {
 
             {/* Login Card */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 10 }} /* Ladder1 Rule: Slight Y rise, no scale */
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }} /* Fast 300ms ease-out */
                 className="w-full max-w-[480px] p-4 relative z-10"
             >
                 <div className="mb-8 text-center">
@@ -128,6 +129,8 @@ export default function LoginPage() {
                             Sign In <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </form>
+
+                    <SocialLoginButtons />
 
                     <div className="mt-6 text-center">
                         <Link href="/forgot-password" className="text-sm text-[rgb(var(--primary))] hover:underline font-medium block mb-4">

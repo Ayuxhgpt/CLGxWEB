@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { ArrowRight, Home, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,9 +69,9 @@ export default function RegisterPage() {
             <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-[rgb(var(--primary))] rounded-full blur-[180px] opacity-[0.06] pointer-events-none" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
                 className="w-full max-w-[500px] p-4 relative z-10"
             >
                 <div className="mb-8 text-center">
@@ -148,6 +149,8 @@ export default function RegisterPage() {
                             Create Account <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </form>
+
+                    <SocialLoginButtons />
                 </div>
 
                 <p className="text-center text-[rgb(var(--text-muted))] text-sm mt-8">

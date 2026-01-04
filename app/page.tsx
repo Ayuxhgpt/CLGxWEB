@@ -31,10 +31,9 @@ export default function Home() {
       {/* HERO SECTION */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         {/* Background Effects */}
+        {/* Background Effects - Ladder1: subtle noise only */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] animate-pulse-slow" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--accent-primary)]/10 rounded-full blur-[128px] animate-pulse-slow delay-1000" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center">
@@ -59,12 +58,12 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/pharma">
-                <Button size="lg" className="min-w-[180px] shadow-[0_0_30px_rgba(6,182,212,0.3)] hover:shadow-[0_0_50px_rgba(6,182,212,0.5)] transition-shadow">
+                <Button size="lg" className="min-w-[180px]">
                   Explore Knowledge <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/resources">
-                <Button variant="glass" size="lg" className="min-w-[180px]">
+                <Button variant="secondary" size="lg" className="min-w-[180px]">
                   Student Resources
                 </Button>
               </Link>

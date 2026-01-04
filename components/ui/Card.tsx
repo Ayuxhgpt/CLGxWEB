@@ -6,19 +6,15 @@ const Card = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { glass?: boolean; hover?: boolean }
 >(({ className, glass, hover, ...props }, ref) => {
-    const Component = hover ? motion.div : "div";
-    const motionProps = hover ? { whileHover: { y: -5, transition: { duration: 0.2 } } } : {};
-
+    // Ladder1: No "glass" prop needed, we default to "ladder-card"
     return (
-        <Component
-            ref={ref as any}
+        <div
+            ref={ref}
             className={cn(
-                "rounded-xl border bg-surface/50 text-text shadow-sm",
-                glass ? "glass-panel" : "border-text/10",
+                "ladder-card p-6", /* Strict Ladder1 Utility */
                 className
             )}
-            {...motionProps as any}
-            {...props as any}
+            {...props}
         />
     );
 });

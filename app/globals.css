@@ -55,13 +55,23 @@
 
 @layer utilities {
 
-  /* Ladder1 Style Utilities - No Blur, Solid Colors */
+  /* Ladder1 Style Utilities - No Blur, Solid Colors, Stroke Depth */
   .ladder-card {
-    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-2xl shadow-2xl;
+    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-2xl transition-all duration-300;
+  }
+
+  .ladder-card:hover {
+    @apply border-zinc-700 scale-[1.01];
+    /* Lighten border + Micro-scale */
   }
 
   .ladder-input {
-    @apply bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border-subtle))] focus:border-[rgb(var(--primary))] focus:ring-1 focus:ring-[rgb(var(--primary))] rounded-xl transition-all duration-200;
+    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-xl transition-all duration-200 text-[rgb(var(--text-primary))];
+  }
+
+  .ladder-input:focus {
+    @apply border-[rgb(var(--primary))] outline-none ring-0;
+    /* Strict focus: Border only, no ring blur */
   }
 
   .text-gradient {

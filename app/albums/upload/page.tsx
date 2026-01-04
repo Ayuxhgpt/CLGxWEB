@@ -88,10 +88,11 @@ export default function UploadPage() {
             <Navbar />
             <main className="max-w-4xl mx-auto px-4 pt-24 pb-12">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }} /* Ladder1: 10px rise */
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                    <Card glass className="border-[var(--text)/0.1]">
+                    <Card> {/* Defaults to ladder-card, no 'glass' prop needed */}
                         <CardHeader>
                             <CardTitle>Upload Content</CardTitle>
                             <CardDescription>
@@ -100,13 +101,16 @@ export default function UploadPage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
 
-                            {/* Dropzone */}
+                            {/* Dropzone - Ladder1 Strict */}
                             <div
                                 {...getRootProps()}
                                 className={`
-                                    relative border-2 border-dashed rounded-xl p-10 transition-all cursor-pointer flex flex-col items-center justify-center text-center group
-                                    ${isDragActive ? "border-[var(--primary)] bg-[var(--primary)]/5" : "border-[var(--text)/0.1] hover:border-[var(--text)/0.3] hover:bg-[var(--surface)]"}
-                                    ${file ? "border-solid border-[var(--active)]/20 bg-[var(--surface)]" : ""}
+                                    relative border-2 border-dashed rounded-xl p-10 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center group
+                                    ${isDragActive
+                                        ? "border-[rgb(var(--primary))] bg-[rgb(var(--primary))]/5"
+                                        : "border-[rgb(var(--border-subtle))] hover:border-[rgb(var(--primary))] hover:bg-[rgb(var(--bg-surface))]"
+                                    }
+                                    ${file ? "bg-[rgb(var(--bg-surface))] border-solid border-[rgb(var(--primary))]/20" : ""}
                                 `}
                             >
                                 <input {...getInputProps()} />
