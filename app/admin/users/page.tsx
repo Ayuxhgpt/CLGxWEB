@@ -182,7 +182,7 @@ export default function UserManagementPage() {
 
                 {/* Filters */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <Card glass className="mb-6 p-4 border-[var(--border-subtle)]">
+                    <Card className="mb-6 p-4 border-[var(--border-subtle)]">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="md:col-span-2">
                                 <Input
@@ -216,7 +216,7 @@ export default function UserManagementPage() {
 
                 {/* Table */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                    <Card glass className="overflow-hidden p-0 border-[var(--border-subtle)]">
+                    <Card className="overflow-hidden p-0 border-[var(--border-subtle)]">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-[var(--bg-surface-2)] text-[var(--text-secondary)] text-xs uppercase tracking-wider text-left border-b border-[var(--border-subtle)]">
