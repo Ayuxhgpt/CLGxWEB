@@ -123,7 +123,7 @@ export default function NotesPage() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                         >
                             {notes.map((note) => (
-                                <Card key={note._id} hover className="group flex flex-col h-full hover:border-blue-500/50 transition-all duration-300">
+                                <Card key={note._id} className="group flex flex-col h-full hover:border-blue-500/50 transition-all duration-300">
                                     <div className="flex justify-between items-start mb-4">
                                         <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/20">
                                             {note.subject}

@@ -62,7 +62,7 @@ export default function ResourcesPage() {
                                         viewport={{ once: true }}
                                         transition={{ delay: i * 0.1 }}
                                     >
-                                        <Card hover className="h-full group">
+                                        <Card className="h-full group">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className={`p-3 rounded-xl bg-white/5 ${item.color}`}>
                                                     <item.icon className="h-6 w-6" />
