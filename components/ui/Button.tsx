@@ -69,7 +69,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 className={cn(buttonVariants({ variant, size, className }))}
                 ref={ref}
                 disabled={isLoading || props.disabled}
-                {...props}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                {...props as any}
             >
                 {Content}
             </motion.button>
