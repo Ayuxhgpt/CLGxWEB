@@ -5,12 +5,13 @@ import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
 import {
-    Upload, FileText, CheckCircle, ShieldAlert, Check, X
+    Upload, FileText, CheckCircle, ShieldAlert, Check, X,
+    MoreHorizontal, Filter, Search, Calendar, User, ArrowRight
 } from "lucide-react";
 import NextImage from "next/image";
 
@@ -39,9 +40,11 @@ export default function AdminDashboard() {
         title: "",
         semester: "Semester 1",
         subject: "",
-        pdfUrl: ""
+        // pdfUrl removed from form logic, using selectedFile
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadingNote, setUploadingNote] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     const router = useRouter();
 
     useEffect(() => {
@@ -56,7 +59,6 @@ export default function AdminDashboard() {
         try {
             const res = await fetch("/api/admin/pending");
             const data = await res.json();
-            // Handle both legacy array (if any) and new object
             if (Array.isArray(data)) {
                 setPendingData({ images: data, notes: [] });
             } else {
@@ -76,7 +78,7 @@ export default function AdminDashboard() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, action, type }),
             });
-            fetchPending(); // Refresh list
+            fetchPending();
         } catch (error) {
             console.error(error);
         }
@@ -84,299 +86,299 @@ export default function AdminDashboard() {
 
     const handleNoteUpload = async (e: React.FormEvent) => {
         e.preventDefault();
+        setUploadError("");
+
+        if (!selectedFile) {
+            setUploadError("Please upload a PDF file first.");
+            return;
+        }
+
         setUploadingNote(true);
         try {
-            const res = await fetch("/api/notes", {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            formData.append("folder", "pharma_elevate_notes");
+            formData.append("title", noteForm.title);
+            formData.append("subject", noteForm.subject);
+            formData.append("semester", noteForm.semester);
+
+            const res = await fetch("/api/upload", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(noteForm)
+                body: formData
             });
+
             if (res.ok) {
                 alert("Note published successfully!");
-                setNoteForm({ title: "", semester: "Semester 1", subject: "", pdfUrl: "" });
+                setNoteForm({ title: "", semester: "Semester 1", subject: "" });
+                setSelectedFile(null);
+                // If it was pending (non-admin?), we'd fetchPending(). But admin auto-approves.
             } else {
-                alert("Failed to upload note.");
+                const data = await res.json();
+                alert("Failed to upload note: " + (data.error || "Unknown error"));
             }
         } catch (err) {
             console.error(err);
+            setUploadError("Upload failed.");
         } finally {
             setUploadingNote(false);
         }
     }
 
-    const handlePdfSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePdfSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
-
-        const data = new FormData();
-        data.append("file", file);
-        data.append("folder", "pharma_elevate_notes");
-
-        try {
-            const res = await fetch("/api/upload", {
-                method: "POST",
-                body: data,
-            });
-            const result = await res.json();
-            if (result.url) {
-                setNoteForm(prev => ({ ...prev, pdfUrl: result.url }));
-            }
-        } catch (err) {
-            alert("Upload failed.");
+        if (file) {
+            setSelectedFile(file);
+            setUploadError("");
         }
     };
 
     if (loading) return null;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <div className="min-h-screen bg-bg-page transition-colors duration-300">
             <Navbar />
-            <main className="container mx-auto px-4 pt-24 pb-12">
+            <main className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
 
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-10 flex items-center gap-4"
+                    className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
-                    <div className="p-3 bg-red-500/10 rounded-xl text-red-500 ring-1 ring-red-500/20">
-                        <ShieldAlert className="h-8 w-8" />
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 border border-red-500/20">
+                            <ShieldAlert className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-text-primary">Admin Console</h1>
+                            <p className="text-text-secondary text-sm">Manage content and community submissions.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Admin Console</h1>
-                        <p className="text-[var(--text-secondary)]">Manage content and community submissions.</p>
+
+                    <div className="flex bg-bg-surface p-1 rounded-lg border border-border-subtle">
+                        <button
+                            onClick={() => setActiveTab('images')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'images' ? 'bg-bg-card shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+                        >
+                            <User className="h-4 w-4" /> Images
+                            <Badge variant={activeTab === 'images' ? "default" : "secondary"} className="ml-1 h-5 px-1.5 min-w-[1.25rem]">{pendingData.images.length}</Badge>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('notes')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'notes' ? 'bg-bg-card shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+                        >
+                            <FileText className="h-4 w-4" /> Notes
+                            <Badge variant={activeTab === 'notes' ? "default" : "secondary"} className="ml-1 h-5 px-1.5 min-w-[1.25rem]">{pendingData.notes.length}</Badge>
+                        </button>
                     </div>
                 </motion.header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Note Upload Panel */}
-                    <motion.section
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                    {/* Main Table Area */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
+                        className="lg:col-span-2 space-y-4"
                     >
-                        <Card glass className="h-full border-l-4 border-l-blue-500">
-                            <CardHeader className="border-b border-[var(--border-subtle)]/50 pb-4 mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
-                                        <Upload className="h-5 w-5" />
-                                    </div>
-                                    <CardTitle>Publish Material</CardTitle>
+                        <div className="bg-bg-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+                            <div className="p-4 border-b border-border-subtle flex items-center justify-between bg-bg-surface/50">
+                                <h3 className="font-semibold text-text-primary">Pending {activeTab === 'images' ? 'Images' : 'Notes'}</h3>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><Filter className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                                 </div>
-                                <CardDescription>Upload course notes for students.</CardDescription>
-                            </CardHeader>
+                            </div>
 
-                            <CardContent>
-                                <form onSubmit={handleNoteUpload} className="space-y-5">
-                                    <Input
-                                        label="Title"
-                                        placeholder="e.g. Pharmaceutics Unit 1"
-                                        value={noteForm.title}
-                                        onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
-                                        required
-                                    />
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-xs text-text-muted uppercase bg-bg-surface border-b border-border-subtle h-10">
+                                        <tr>
+                                            <th className="px-6 font-medium w-1/3">Item</th>
+                                            <th className="px-6 font-medium">Uploader</th>
+                                            <th className="px-6 font-medium">Date</th>
+                                            <th className="px-6 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border-subtle">
+                                        {activeTab === 'images' ? (
+                                            pendingData.images.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="p-8">
+                                                        <EmptyState title="No Images" description="Queue is empty." icon={CheckCircle} className="border-0 shadow-none bg-transparent" />
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                pendingData.images.map((img) => (
+                                                    <tr key={img._id} className="bg-bg-card hover:bg-bg-surface transition-colors h-16">
+                                                        <td className="px-6 py-2">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="h-10 w-10 rounded bg-bg-surface border border-border-subtle overflow-hidden flex-shrink-0">
+                                                                    <NextImage src={img.imageUrl || img.url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="font-medium text-text-primary truncate max-w-[200px]">{img.album?.title || 'Unknown Album'}</div>
+                                                                    <div className="text-xs text-text-secondary truncate max-w-[200px]">{img.caption}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-1 ring-primary/20">
+                                                                    {img.uploadedBy?.name?.[0] || '?'}
+                                                                </div>
+                                                                <span className="text-text-secondary truncate max-w-[120px]">{img.uploadedBy?.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-2 text-text-muted whitespace-nowrap text-xs">
+                                                            {new Date(img.createdAt).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-2 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-green-500 hover:text-green-600 hover:bg-green-500/10 border-green-500/20" onClick={() => handleAction(img._id, 'approve', 'image')}>
+                                                                    <Check className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20" onClick={() => handleAction(img._id, 'delete', 'image')}>
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )
+                                        ) : (
+                                            pendingData.notes.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="p-8">
+                                                        <EmptyState title="No Notes" description="Queue is empty." icon={CheckCircle} className="border-0 shadow-none bg-transparent" />
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                pendingData.notes.map((note) => (
+                                                    <tr key={note._id} className="bg-bg-card hover:bg-bg-surface transition-colors h-16">
+                                                        <td className="px-6 py-2">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="h-10 w-10 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                                                    <FileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="font-medium text-text-primary truncate max-w-[200px]">{note.title}</div>
+                                                                    <a href={note.pdfUrl} target="_blank" className="text-xs text-primary hover:underline flex items-center gap-1">View PDF <ArrowRight className="h-3 w-3" /></a>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-1 ring-primary/20">
+                                                                    {note.uploadedBy?.name?.[0] || '?'}
+                                                                </div>
+                                                                <span className="text-text-secondary truncate max-w-[120px]">{note.uploadedBy?.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-2 text-text-muted whitespace-nowrap text-xs">
+                                                            {new Date(note.createdAt).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-2 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-green-500 hover:text-green-600 hover:bg-green-500/10 border-green-500/20" onClick={() => handleAction(note._id, 'approve', 'note')}>
+                                                                    <Check className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20" onClick={() => handleAction(note._id, 'delete', 'note')}>
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </motion.div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Subject</label>
-                                        <Input
-                                            type="text"
-                                            placeholder="e.g. Pharmacology"
-                                            value={noteForm.subject}
-                                            onChange={(e) => setNoteForm({ ...noteForm, subject: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Semester</label>
-                                            <select
-                                                value={noteForm.semester}
-                                                onChange={(e) => setNoteForm({ ...noteForm, semester: e.target.value })}
-                                                className="glass-input w-full rounded-md px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            >
-                                                {Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`).map(s => <option key={s} value={s} className="bg-[var(--bg-surface)]">{s}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Resource File</label>
-                                            <div className="relative group cursor-pointer">
-                                                <input
-                                                    type="file"
-                                                    accept="application/pdf"
-                                                    onChange={handlePdfSelect}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                                />
-                                                <div className={`w-full p-2.5 rounded-md border border-dashed flex items-center justify-center gap-2 transition-all ${noteForm.pdfUrl ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-[var(--text)/0.2] bg-[var(--surface)/0.5] text-[var(--text-muted)] group-hover:bg-[var(--surface)] group-hover:border-[var(--primary)/0.5]'}`}>
-                                                    {noteForm.pdfUrl ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                                                    <span className="text-sm font-medium truncate">{noteForm.pdfUrl ? 'Ready' : 'Select PDF'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Button
-                                        type="submit"
-                                        className="w-full"
-                                        disabled={uploadingNote || !noteForm.pdfUrl}
-                                        isLoading={uploadingNote}
-                                    >
-                                        Publish Note
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </motion.section>
-
-                    {/* Pending Approvals Panel */}
-                    <motion.section
+                    {/* Sidebar Upload Panel */}
+                    <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
+                        className="space-y-6"
                     >
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                Pending Approvals
-                            </h2>
-                            <div className="flex bg-[var(--bg-surface-2)] p-1 rounded-lg">
-                                <button
-                                    onClick={() => setActiveTab('images')}
-                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'images' ? 'bg-white text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
-                                >
-                                    Images ({pendingData.images.length})
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('notes')}
-                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'notes' ? 'bg-white text-black shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
-                                >
-                                    Notes ({pendingData.notes.length})
-                                </button>
+                        <div className="bg-bg-card border border-border-subtle rounded-xl p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                                    <Upload className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-text-primary">Publish Material</h3>
+                                    <p className="text-xs text-text-secondary">Upload simplified notes.</p>
+                                </div>
                             </div>
+
+                            <form onSubmit={handleNoteUpload} className="space-y-4">
+                                <Input
+                                    label="Title"
+                                    placeholder="e.g. Pharmaceutics Unit 1"
+                                    value={noteForm.title}
+                                    onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
+                                    className="saas-input"
+                                    required
+                                />
+
+                                <div>
+                                    <label className="block text-xs font-medium text-text-secondary mb-1.5">Subject</label>
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g. Pharmacology"
+                                        value={noteForm.subject}
+                                        onChange={(e) => setNoteForm({ ...noteForm, subject: e.target.value })}
+                                        className="saas-input"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-medium text-text-secondary mb-1.5">Semester</label>
+                                        <select
+                                            value={noteForm.semester}
+                                            onChange={(e) => setNoteForm({ ...noteForm, semester: e.target.value })}
+                                            className="w-full rounded-lg bg-bg-surface border border-border-subtle px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text-primary"
+                                        >
+                                            {Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`).map(s => <option key={s} value={s} className="bg-bg-card">{s}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-text-secondary mb-1.5">Resource File {selectedFile && <span className="text-green-500 ml-2 text-[10px] uppercase tracking-wider font-bold">Selected</span>}</label>
+                                        <div className="relative group cursor-pointer">
+                                            <input
+                                                type="file"
+                                                accept="application/pdf"
+                                                onChange={handlePdfSelect}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                            />
+                                            <div className={`w-full p-2.5 rounded-lg border border-dashed flex items-center justify-center gap-2 transition-all ${selectedFile ? 'border-green-500/50 bg-green-500/10 text-green-500' : 'border-border-subtle bg-bg-surface text-text-muted group-hover:bg-bg-surface/80 group-hover:border-primary/50'}`}>
+                                                {selectedFile ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                                                <span className="text-sm font-medium truncate">{selectedFile ? selectedFile.name : 'Select PDF'}</span>
+                                            </div>
+                                        </div>
+                                        {uploadError && <p className="text-xs text-red-500 mt-1">{uploadError}</p>}
+                                    </div>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    className="w-full mt-2"
+                                    disabled={uploadingNote || !selectedFile}
+                                    isLoading={uploadingNote}
+                                >
+                                    Publish Note
+                                </Button>
+                            </form>
                         </div>
+                    </motion.div>
 
-                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                            <AnimatePresence mode="wait">
-                                {activeTab === 'images' ? (
-                                    pendingData.images.length === 0 ? (
-                                        <EmptyState
-                                            key="empty-images"
-                                            title="No Pending Images"
-                                            description="All caught up on image approvals."
-                                            icon={CheckCircle}
-                                        />
-                                    ) : (
-                                        pendingData.images.map((img) => (
-                                            <motion.div
-                                                key={img._id}
-                                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                                animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-                                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                            >
-                                                <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
-                                                    <div className="h-24 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm group">
-                                                        <NextImage
-                                                            src={img.imageUrl || img.url} // Handle legacy naming if needed
-                                                            alt="Pending"
-                                                            width={96}
-                                                            height={96}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                            unoptimized
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0 w-full">
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={img.album?.title}>{img.album?.title || 'No Album'}</h4>
-                                                            <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
-                                                                {new Date(img.createdAt).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">"{img.caption || 'No caption'}"</p>
-                                                        <div className="flex items-center justify-between mt-auto">
-                                                            <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{img.uploadedBy?.name || 'Unknown'}</span></p>
-
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
-                                                                    onClick={() => handleAction(img._id, 'approve', 'image')}
-                                                                >
-                                                                    <Check className="h-4 w-4 mr-1" /> Approve
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    className="h-8 shadow-lg shadow-red-500/20"
-                                                                    onClick={() => handleAction(img._id, 'delete', 'image')}
-                                                                >
-                                                                    <X className="h-4 w-4 mr-1" /> Reject
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </Card>
-                                            </motion.div>
-                                        ))
-                                    )
-                                ) : (
-                                    pendingData.notes.length === 0 ? (
-                                        <EmptyState
-                                            key="empty-notes"
-                                            title="No Pending Notes"
-                                            description="All caught up on note approvals."
-                                            icon={FileText}
-                                        />
-                                    ) : (
-                                        pendingData.notes.map((note) => (
-                                            <motion.div
-                                                key={note._id}
-                                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                                animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-                                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                            >
-                                                <Card className="flex flex-col sm:flex-row gap-4 p-4 items-start bg-[var(--surface)]/50 border-[var(--border-subtle)] hover:bg-[var(--surface)] transition-colors">
-                                                    <div className="h-24 w-24 flex-shrink-0 flex items-center justify-center rounded-lg bg-[var(--bg-main)] border border-[var(--border-subtle)] shadow-sm">
-                                                        <FileText className="h-10 w-10 text-[var(--primary)]" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0 w-full">
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <h4 className="font-bold text-[var(--text-primary)] truncate pr-2" title={note.title}>{note.title}</h4>
-                                                            <span className="text-[10px] bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] px-2 py-1 rounded text-[var(--text-secondary)] whitespace-nowrap">
-                                                                {new Date(note.createdAt).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-sm text-[var(--text-secondary)] line-clamp-1">{note.subject} • {note.semester}</p>
-                                                        <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--primary)] hover:underline mb-3 block">View PDF</a>
-
-                                                        <div className="flex items-center justify-between mt-auto">
-                                                            <p className="text-xs text-[var(--text-muted)]">By: <span className="text-[var(--text-primary)] font-medium">{note.uploadedBy?.name || 'Unknown'}</span></p>
-
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    className="h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/20"
-                                                                    onClick={() => handleAction(note._id, 'approve', 'note')}
-                                                                >
-                                                                    <Check className="h-4 w-4 mr-1" /> Approve
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    className="h-8 shadow-lg shadow-red-500/20"
-                                                                    onClick={() => handleAction(note._id, 'delete', 'note')}
-                                                                >
-                                                                    <X className="h-4 w-4 mr-1" /> Reject
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </Card>
-                                            </motion.div>
-                                        ))
-                                    )
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </motion.section>
                 </div>
 
             </main>

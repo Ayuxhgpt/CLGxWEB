@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { signIn } from "next-auth/react";
-import { Github, Mail } from "lucide-react";
+import { Github } from "lucide-react";
 import { useState } from "react";
 
 export function SocialLoginButtons() {

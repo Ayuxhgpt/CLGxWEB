@@ -56,13 +56,27 @@ export default function UploadPage() {
         formData.append("file", file);
         formData.append("folder", file.type.startsWith("image/") ? "pharma_elevate_albums" : "pharma_elevate_notes");
 
+        // Add Metadata for Notes
+        if (file.type === 'application/pdf') {
+            // Basic validation
+            if (!title || !subject || !semester) {
+                setStatus("error");
+                setErrorMessage("Please fill in all fields (Title, Subject, Semester)");
+                setUploading(false);
+                return;
+            }
+            formData.append("title", title);
+            formData.append("subject", subject);
+            formData.append("semester", semester);
+        }
+
         try {
             // Simulate progress
             const interval = setInterval(() => {
                 setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
             }, 300);
 
-            // Step 1: Upload to Cloudinary
+            // Step 1: Atomic Upload (Upload + Save DB)
             const res = await fetch("/api/upload", {
                 method: "POST",
                 body: formData,
@@ -74,43 +88,8 @@ export default function UploadPage() {
                 throw new Error(data.error || "Upload failed");
             }
 
-            // Step 2: Save Metadata to DB (If it's a Note)
-            if (!file.type.startsWith('image/')) {
-                // It's a Note (PDF)
-                // We need extra fields (subject/semester/title) which should be in the form
-                // For now, we'll auto-fill standard values or check if we need to add inputs to the UI.
-                // *Self-Correction*: The UI doesn't have inputs for Subject/Semester yet!
-                // We need to add them. But for this specific bug fix (Data Loss), the user prompt didn't explicitly ask for UI changes,
-                // but we CANNOT save a note without them.
-                // We will default them to "General" / "Semester 1" if missing, OR better, 
-                // prompt the user. But `UploadPage` currently has no inputs.
-                // Let's assume for now we hardcode "Uncategorized" so at least it saves, 
-                // OR we can parse filename.
-                // *Decision*: Update UI to include fields in NEXT STEP.
-                // Here we just make the call.
-
-                // WAIT: If we don't have fields, the DB will reject it (Required fields).
-                // I need to add inputs to the JSX first. 
-                // Let's assume we pass dummy data for now to fix the *connectivity*, and I will add inputs in the next tool call.
-
-                const noteRes = await fetch("/api/notes", {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: title || file.name.replace('.pdf', ''),
-                        subject: subject || "General",
-                        semester: semester,
-                        pdfUrl: data.url
-                    })
-                });
-
-                if (!noteRes.ok) {
-                    // Transaction Safety: Rollback Cloudinary
-                    // console.error("DB Save failed, rolling back Cloudinary...");
-                    // await fetch("/api/upload/rollback", { ... }) // If implemented
-                    throw new Error("Failed to save note metadata. Please try again.");
-                }
-            }
+            // Success! Data contains the created Note/Image object (or just URL if no DB save triggered for generic images)
+            // For Notes, it returns the Note object.
 
             clearInterval(interval);
             setProgress(100);
@@ -121,8 +100,9 @@ export default function UploadPage() {
             }, 2000);
 
         } catch (error: any) {
+            console.error("Upload Logic Error:", error);
             setStatus("error");
-            setErrorMessage(error.message);
+            setErrorMessage(error.message || "Something went wrong");
             setProgress(0);
         } finally {
             setUploading(false);

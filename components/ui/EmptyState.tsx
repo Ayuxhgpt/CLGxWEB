@@ -3,6 +3,7 @@
 import { LucideIcon, PackageOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
+import { ReactNode } from "react";
 
 interface EmptyStateProps {
     title: string;
@@ -13,9 +14,10 @@ interface EmptyStateProps {
     };
     icon?: LucideIcon;
     className?: string;
+    children?: ReactNode;
 }
 
-export function EmptyState({ title, description, action, icon: Icon = PackageOpen, className }: EmptyStateProps) {
+export function EmptyState({ title, description, action, icon: Icon = PackageOpen, className, children }: EmptyStateProps) {
     return (
         <div className={cn("flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface-2)]/30", className)}>
             <div className="bg-[var(--bg-main)] p-4 rounded-full mb-4">
@@ -28,6 +30,7 @@ export function EmptyState({ title, description, action, icon: Icon = PackageOpe
                     {action.label}
                 </Button>
             )}
+            {children}
         </div>
     );
 }

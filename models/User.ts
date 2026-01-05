@@ -38,10 +38,21 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    otp: {
+    otpHash: {
         type: String,
+        select: false, // Do not return by default
     },
-    otpExpiry: {
+    otpExpiresAt: {
+        type: Date,
+    },
+    otpSentAt: {
+        type: Date,
+    },
+    resetTokenHash: {
+        type: String,
+        select: false,
+    },
+    resetTokenExpiresAt: {
         type: Date,
     },
     role: {

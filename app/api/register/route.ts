@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { sendVerificationEmail } from '@/lib/email';
 import crypto from 'crypto';
+import { validatePassword } from '@/lib/validators/password';
 
 export async function POST(req: Request) {
     try {
@@ -42,10 +43,11 @@ export async function POST(req: Request) {
             );
         }
 
-        // Password Strength (Min 8 chars, at least one number)
-        if (password.length < 8 || !/\d/.test(password)) {
+        // Password Strength
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
             return NextResponse.json(
-                { message: 'Password must be at least 8 characters long and contain a number' },
+                { message: passwordValidation.message },
                 { status: 400 }
             );
         }
@@ -53,12 +55,11 @@ export async function POST(req: Request) {
         await dbConnect();
 
         // Check if user already exists
-        let existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email });
 
-        // Check username uniqueness (distinct from email check)
+        // Check username uniqueness
         const existingUsername = await User.findOne({ username: username.toLowerCase() });
         if (existingUsername) {
-            // If unverified and same email, we might be overwriting, but if different email has this username, it's taken.
             if (!existingUser || existingUsername._id.toString() !== existingUser._id.toString()) {
                 return NextResponse.json({ message: 'Username is taken' }, { status: 400 });
             }
@@ -72,17 +73,16 @@ export async function POST(req: Request) {
                 );
             }
 
-            // Rate limit: Check if OTP was sent recently (using otpExpiry as proxy or updatedAt)
-            // If otpExpiry is > 9 mins from now (assuming 10 min expiry), then it was just sent?
-            // Better: Check updatedAt if avail, or just check if otpExpiry is far in future.
-            // Simple check: Allow resend only after 1 minute.
-            const lastUpdated = new Date(existingUser.updatedAt).getTime();
-            const now = Date.now();
-            if (now - lastUpdated < 60 * 1000) {
-                return NextResponse.json(
-                    { message: 'Please wait 1 minute before resending OTP' },
-                    { status: 429 }
-                );
+            // 60s cooldown Check
+            if (existingUser.otpSentAt) {
+                const now = new Date();
+                const diff = (now.getTime() - new Date(existingUser.otpSentAt).getTime()) / 1000;
+                if (diff < 60) {
+                    return NextResponse.json(
+                        { message: `Please wait ${Math.ceil(60 - diff)} seconds before resending OTP` },
+                        { status: 429 }
+                    );
+                }
             }
         }
 
@@ -93,20 +93,24 @@ export async function POST(req: Request) {
         const otp = crypto.randomInt(100000, 999999).toString();
         // Hash OTP for storage
         const hashedOtp = await bcrypt.hash(otp, 10);
-
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        // OTP Expiry: 10 minutes from now
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const otpSentAt = new Date();
 
         let userId = existingUser?._id;
 
         if (existingUser) {
             // Update existing unverified user
+            // We overwrite everything to ensure fresh state
             existingUser.name = name;
-            existingUser.username = username.toLowerCase(); // Update username
+            existingUser.username = username.toLowerCase();
             existingUser.password = hashedPassword;
             existingUser.phone = phone;
             existingUser.year = year || '1st Year';
-            existingUser.otp = hashedOtp;
-            existingUser.otpExpiry = otpExpiry;
+            // Set new OTP fields
+            existingUser.otpHash = hashedOtp;
+            existingUser.otpExpiresAt = otpExpiresAt;
+            existingUser.otpSentAt = otpSentAt;
             await existingUser.save();
         } else {
             // Create user
@@ -119,8 +123,9 @@ export async function POST(req: Request) {
                 year: year || '1st Year',
                 role: 'student',
                 isVerified: false,
-                otp: hashedOtp,
-                otpExpiry,
+                otpHash: hashedOtp,
+                otpExpiresAt: otpExpiresAt,
+                otpSentAt: otpSentAt,
             });
             userId = newUser._id;
         }
@@ -133,11 +138,16 @@ export async function POST(req: Request) {
         } catch (emailError) {
             console.error(`[AUTH-CRITICAL] Failed to send OTP email to ${email}. Rolling back user creation.`, emailError);
 
-            // ROLLBACK: Delete the user we just created/updated so they aren't stuck locally without an OTP
+            // ATOMIC ROLLBACK: Delete the user we just created/updated
             if (!existingUser) {
-                // Only delete if it was a NEW user. If it was an existing user trying to verify, we just fail the email send but keep the record.
                 await User.findByIdAndDelete(userId);
-                console.log(`[AUTH-CRITICAL] Roleback successful: User ${userId} deleted.`);
+                console.log(`[AUTH-CRITICAL] Rollback successful: User ${userId} deleted.`);
+            } else {
+                // If it was an existing unverified user, we arguably should clear the OTP fields or delete them too 
+                // to avoid "account exists but no OTP" state. 
+                // Strictest: Delete them so they can try again fresh.
+                await User.findByIdAndDelete(userId);
+                console.log(`[AUTH-CRITICAL] Rollback successful: Existing unverified User ${userId} deleted.`);
             }
 
             return NextResponse.json(

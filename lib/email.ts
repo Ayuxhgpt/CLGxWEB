@@ -1,8 +1,8 @@
-import { Resend } from 'resend';
+import { Resend, CreateEmailOptions } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendEmailWithRetry(payload: any, retries = 1, delay = 500) {
+async function sendEmailWithRetry(payload: CreateEmailOptions, retries = 1, delay = 500) {
     for (let i = 0; i <= retries; i++) {
         try {
             const data = await resend.emails.send(payload);

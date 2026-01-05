@@ -58,23 +58,27 @@ function VerifyContent() {
 
     const handleResend = async () => {
         setIsResendDisabled(true);
-        setTimer(60); // 60s cooldown
+        setTimer(60); // 60s cooldown (consistent with backend)
         setMessage('');
         setError('');
 
         try {
-            const res = await fetch('/api/register', {
+            const res = await fetch('/api/auth/resend-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, isResend: true }),
+                body: JSON.stringify({ email }),
             });
 
+            const data = await res.json();
+
             if (res.ok) {
-                setMessage('New OTP sent to your email.');
+                setMessage(data.message || 'New OTP sent to your email.');
             } else {
-                setError('Failed to resend OTP.');
-                setIsResendDisabled(false);
-                setTimer(0);
+                setError(data.message || 'Failed to resend OTP.');
+                if (res.status !== 429) { // Don't reset timer if rate limited
+                    setIsResendDisabled(false);
+                    setTimer(0);
+                }
             }
         } catch (err) {
             setError('Network error.');

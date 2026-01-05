@@ -2,79 +2,117 @@
 
 @layer base {
   :root {
-    /* Default Dark Mode First Strategy */
-    --bg-main: 0 0 0;
-    /* Pure Black #000000 */
-    --bg-surface: 10 10 10;
-    /* Dark Gray #0A0A0A */
-    --bg-card: 17 17 17;
-    /* Card Gray #111111 */
-    --border-subtle: 30 30 30;
-    /* #1E1E1E */
+    /* 
+      🌞 LIGHT MODE (Academic / Clean)
+      - White/Slate palette
+      - High contrast borders
+      - Soft shadows
+    */
+    --bg-page: 255 255 255;      /* #ffffff */
+    --bg-surface: 248 250 252;   /* #f8fafc (slate-50) */
+    --bg-card: 255 255 255;      /* #ffffff */
 
-    --text-primary: 255 255 255;
-    /* #FFFFFF */
-    --text-secondary: 161 161 170;
-    /* #A1A1AA (zinc-400) */
-    --text-muted: 113 113 122;
-    /* #71717A (zinc-500) */
+    --border-subtle: 226 232 240;    /* #e2e8f0 (slate-200) */
+    --border-highlight: 203 213 225; /* #cbd5e1 (slate-300) */
 
-    --primary: 16 185 129;
-    /* emerald-500 #10b981 */
-    --primary-hover: 5 150 105;
-    /* emerald-600 */
+    --text-primary: 15 23 42;    /* #0f172a (slate-900) */
+    --text-secondary: 71 85 105; /* #475569 (slate-600) */
+    --text-muted: 148 163 184;   /* #94a3b8 (slate-400) */
 
-    --danger: 239 68 68;
+    --primary: 16 185 129;           /* #10b981 (emerald-500) */
+    --primary-foreground: 255 255 255;
+    
+    --accent-primary: 16 185 129;
 
-    /* Preserve for legacy if needed, but override main strategy */
-    --bg: 0 0 0;
-    --text: 255 255 255;
+    --radius: 0.5rem;
   }
 
-  /* Light Mode - Optional, mapped to clean distinct values */
-  .light {
-    --bg-main: 255 255 255;
-    --bg-surface: 249 250 251;
-    --bg-card: 255 255 255;
-    --border-subtle: 229 231 235;
+  .dark {
+    /* 
+      🌙 DARK MODE (Modern / Dashboard)
+      - Deep Slate/Abyss
+      - Border-based separation (less shadow reliance)
+      - Glowing accents
+    */
+    --bg-page: 2 6 23;           /* #020617 (slate-950) */
+    --bg-surface: 15 23 42;      /* #0f172a (slate-900) */
+    --bg-card: 30 41 59;         /* #1e293b (slate-800) */
 
-    --text-primary: 17 24 39;
-    --text-secondary: 75 85 99;
-    --text-muted: 156 163 175;
+    --border-subtle: 30 41 59;       /* #1e293b (slate-800) */
+    --border-highlight: 51 65 85;    /* #334155 (slate-700) */
 
-    --primary: 16 185 129;
-    --bg: 255 255 255;
-    --text: 17 24 39;
+    --text-primary: 248 250 252;     /* #f8fafc (slate-50) */
+    --text-secondary: 148 163 184;   /* #94a3b8 (slate-400) */
+    --text-muted: 100 116 139;       /* #64748b (slate-500) */
+
+    --primary: 52 211 153;           /* #34d399 (emerald-400) */
+    --primary-foreground: 2 6 23;
   }
 
   body {
-    @apply bg-[rgb(var(--bg-main))] text-[rgb(var(--text-primary))] antialiased selection:bg-[rgb(var(--primary)/0.3)] selection:text-white;
+    background-color: rgb(var(--bg-page));
+    color: rgb(var(--text-primary));
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
 @layer utilities {
-
-  /* Ladder1 Style Utilities - No Blur, Solid Colors, Stroke Depth */
-  .ladder-card {
-    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-2xl transition-all duration-300;
+  /* SaaS Card - Mode Adaptive */
+  .saas-card {
+    background-color: rgb(var(--bg-card));
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: var(--radius);
+    transition: all 200ms ease-in-out;
   }
 
-  .ladder-card:hover {
-    @apply border-zinc-700 scale-[1.01];
-    /* Lighten border + Micro-scale */
+  /* Light Mode: Soft Shadows */
+  :root:not(.dark) .saas-card {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+  :root:not(.dark) .saas-card:hover {
+    border-color: rgb(var(--border-highlight));
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 
-  .ladder-input {
-    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-xl transition-all duration-200 text-[rgb(var(--text-primary))];
+  /* Dark Mode: Border Separation */
+  .dark .saas-card {
+    box-shadow: none; /* Minimal/No shadow in dark mode */
+  }
+  .dark .saas-card:hover {
+    border-color: rgb(var(--primary) / 0.3); /* Subtle glow on hover */
+    background-color: rgb(var(--bg-surface)); /* Slight lift */
   }
 
-  .ladder-input:focus {
-    @apply border-[rgb(var(--primary))] outline-none ring-0;
-    /* Strict focus: Border only, no ring blur */
+  /* SaaS Input */
+  .saas-input {
+    background-color: rgb(var(--bg-surface));
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(var(--text-primary));
+    transition: all 150ms ease-in-out;
   }
 
+  .saas-input:focus {
+    outline: none;
+    border-color: rgb(var(--primary));
+    box-shadow: 0 0 0 2px rgba(var(--primary), 0.2);
+  }
+
+  .saas-input::placeholder {
+    color: rgb(var(--text-muted));
+  }
+
+  /* Text Gradient */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-[rgb(var(--text-secondary))];
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, rgb(var(--text-primary)), rgb(var(--text-secondary)));
   }
 }

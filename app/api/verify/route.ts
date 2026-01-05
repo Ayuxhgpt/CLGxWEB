@@ -24,20 +24,23 @@ export async function POST(req: Request) {
         }
 
         // Verify OTP
-        const isValid = await bcrypt.compare(otp, user.otp);
+        const isValid = await bcrypt.compare(otp, user.otpHash);
         if (!isValid) {
             return NextResponse.json({ message: 'Invalid OTP' }, { status: 400 });
         }
 
         // Check expiry
-        if (user.otpExpiry < new Date()) {
+        if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
             return NextResponse.json({ message: 'OTP expired. Please register again.' }, { status: 400 });
         }
 
         // Verify
         user.isVerified = true;
-        user.otp = undefined;
-        user.otpExpiry = undefined;
+        user.otpHash = undefined;
+        user.otpExpiresAt = undefined;
+        user.otpSentAt = undefined;
+        user.otp = undefined; // Cleanup legacy
+        user.otpExpiry = undefined; // Cleanup legacy
         await user.save();
 
         return NextResponse.json({ message: 'Email verified successfully' }, { status: 200 });

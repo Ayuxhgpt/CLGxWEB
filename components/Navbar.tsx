@@ -1,20 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut, LayoutDashboard, Image as ImageIcon, BookOpen, Settings } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard, Settings } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
+import { ThemeSelect } from "@/components/ThemeSelect";
 
 export default function Navbar() {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -33,18 +35,23 @@ export default function Navbar() {
         { href: "/resources", label: "Resources" },
     ];
 
+    const isActive = (path: string) => {
+        if (path === "/" && pathname !== "/") return false;
+        return pathname?.startsWith(path);
+    };
+
     return (
         <header
             className={cn(
                 "fixed top-0 w-full z-50 border-b transition-all duration-300",
-                "bg-[rgb(var(--bg-surface))] border-[rgb(var(--border-subtle))] py-3" /* Ladder1: Always Solid, Always Abyss */
+                "bg-[rgb(var(--bg-surface))] border-[rgb(var(--border-subtle))] py-3"
             )}
         >
             <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
                 {/* Brand */}
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
-                        <Image src="/assists/scp.jpg" alt="Logo" width={40} height={40} className="object-cover h-full w-full" />
+                    <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/10 shadow-lg group-hover:scale-105 transition-transform bg-black">
+                        <Image src="/assists/scp.jpg" alt="Logo" width={40} height={40} className="object-contain h-full w-full" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-[var(--accent-primary)] transition-all">
@@ -60,7 +67,15 @@ export default function Navbar() {
                 <nav className="hidden md:flex items-center gap-1">
                     {navLinks.map((link) => (
                         <Link key={link.href} href={link.href}>
-                            <Button variant="ghost" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                            <Button
+                                variant="ghost"
+                                className={cn(
+                                    "text-sm font-medium transition-colors",
+                                    isActive(link.href)
+                                        ? "text-[var(--text-primary)] bg-[var(--bg-surface)]"
+                                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                )}
+                            >
                                 {link.label}
                             </Button>
                         </Link>
@@ -69,16 +84,19 @@ export default function Navbar() {
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-4">
-                    <ThemeToggle />
+                    <ThemeSelect />
                     {session ? (
                         <div className="flex items-center gap-3 pl-4 border-l border-[var(--border-subtle)]">
                             <Link href="/dashboard">
-                                <Button variant="secondary" size="sm" className="hidden lg:flex">
+                                <Button
+                                    variant={isActive('/dashboard') ? "secondary" : "ghost"}
+                                    size="sm"
+                                    className="hidden lg:flex"
+                                >
                                     <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
                                 </Button>
                             </Link>
 
-                            {/* Profile Dropdown */}
                             {/* Profile Dropdown */}
                             <div className="relative group" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
                                 <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[2px] cursor-pointer hover:shadow-lg hover:shadow-purple-500/20 transition-all">
@@ -165,7 +183,12 @@ export default function Navbar() {
                         <div className="p-4 space-y-4">
                             {navLinks.map((link) => (
                                 <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
-                                    <div className="block p-3 rounded-xl hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors">
+                                    <div className={cn(
+                                        "block p-3 rounded-xl hover:bg-[var(--bg-surface)] font-medium transition-colors",
+                                        isActive(link.href)
+                                            ? "text-[var(--text-primary)] bg-[var(--bg-surface)] border border-[var(--border-subtle)]"
+                                            : "text-[var(--text-secondary)]"
+                                    )}>
                                         {link.label}
                                     </div>
                                 </Link>

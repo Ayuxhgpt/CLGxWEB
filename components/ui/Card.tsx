@@ -1,12 +1,10 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 const Card = React.forwardRef<
     HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & { glass?: boolean; hover?: boolean }
->(({ className, glass, hover, ...props }, ref) => {
-    // Ladder1: No "glass" prop needed, we default to "ladder-card"
+    React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
     return (
         <div
             ref={ref}

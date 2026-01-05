@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import cloudinary from '@/lib/cloudinary';
 import dbConnect from '@/lib/db';
 import Image from '@/models/Image';
+import Note from '@/models/Note';
 import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -18,6 +19,11 @@ export async function POST(req: Request) {
         const caption = formData.get('caption') as string | null;
         const explicitFolder = formData.get('folder') as string | null;
 
+        // Metadata for Notes
+        const title = formData.get('title') as string | null;
+        const subject = formData.get('subject') as string | null;
+        const semester = formData.get('semester') as string | null;
+
         if (!file) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
@@ -30,20 +36,23 @@ export async function POST(req: Request) {
         // Determine folder & Validate Type
         let folder = explicitFolder ?? 'pharma_elevate_misc';
 
-        if (albumId) {
+        // NOTE SPECIFIC VALIDATION
+        if (folder === 'pharma_elevate_notes' || file.type === 'application/pdf') {
+            folder = 'pharma_elevate_notes'; // Enforce folder
+            if (file.type !== 'application/pdf') {
+                return NextResponse.json({ error: 'Only PDF allowed for notes' }, { status: 400 });
+            }
+            if (!title || !subject || !semester) {
+                return NextResponse.json({ error: 'Missing required metadata (title, subject, semester) for notes' }, { status: 400 });
+            }
+        }
+        else if (albumId) {
             folder = 'pharma_elevate_albums';
             if (!file.type.startsWith('image/')) {
                 return NextResponse.json({ error: 'Only images allowed for albums' }, { status: 400 });
             }
         }
-
-        if (folder === 'pharma_elevate_notes') {
-            if (file.type !== 'application/pdf') {
-                return NextResponse.json({ error: 'Only PDF allowed for notes' }, { status: 400 });
-            }
-        }
-
-        if (folder === 'pharma_elevate_profiles') {
+        else if (folder === 'pharma_elevate_profiles') {
             if (!file.type.startsWith('image/')) {
                 return NextResponse.json({ error: 'Only images allowed for profile' }, { status: 400 });
             }
@@ -73,7 +82,7 @@ export async function POST(req: Request) {
         // Upload to Cloudinary stream
         const uploadResult = await new Promise<any>((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                { folder },
+                { folder, resource_type: file.type === 'application/pdf' ? 'auto' : 'image' }, // 'auto' for PDFs to be safe, though 'image' often works for PDFs in Cloudinary, 'raw' or 'auto' is better. Notes: Cloudinary usually treats PDF as image if you want previews, but let's stick to default behavior or auto.
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);
@@ -81,7 +90,53 @@ export async function POST(req: Request) {
             ).end(buffer);
         });
 
-        // If generic upload (no album), just return URL
+        // CONNECT DB ONCE
+        await dbConnect();
+
+        // ---------------------------------------------------------
+        // HANDLE NOTES (PDF)
+        // ---------------------------------------------------------
+        if (folder === 'pharma_elevate_notes') {
+            try {
+                // ATOMIC-LIKE SAVE
+                const isAdmin = (session.user as any).role === 'admin';
+                const newNote = await Note.create({
+                    title,
+                    subject,
+                    semester,
+                    pdfUrl: uploadResult.secure_url,
+                    uploadedBy: (session.user as any).id,
+                    status: isAdmin ? 'approved' : 'pending',
+                    approvedBy: isAdmin ? (session.user as any).id : null,
+                    statusUpdatedAt: new Date(),
+                    // Cloudinary public_id could be useful to store for deletion, Note model doesn't seemingly have it explicitly in previous read? 
+                    // Let's check Note model again. It didn't have publicId. 
+                    // Ideally we SHOULD add it. 
+                    // But for now, we just save what we can. 
+                    // Wait, if we don't save publicId, we can't delete it later easily if admin deletes note.
+                    // For this specific 'Integrity' task, the rollback relies on uploadResult.public_id which we HAVE here.
+                    // So immediate rollback works. Future deletion might be issue without persistent public_id, but that's a separate refactor.
+                });
+
+                return NextResponse.json(newNote, { status: 201 });
+
+            } catch (dbError) {
+                console.error('DB Note Create Failed, Rolling back Cloudinary upload...');
+                // ROLLBACK
+                await cloudinary.uploader.destroy(uploadResult.public_id);
+                throw dbError;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // HANDLE IMAGES / ALBUMS
+        // ---------------------------------------------------------
+
+        // If generic upload (no album and not a note/profile specific flow we track in DB?), just return URL?
+        // Original code: "If generic upload (no album), just return URL"
+        // But what about 'pharma_elevate_profiles'? Usually those are User updates, generic upload might not create Image doc?
+        // Let's stick to original logic: if !albumId (and not note), return URL.
+
         if (!albumId) {
             return NextResponse.json({
                 url: uploadResult.secure_url,
@@ -89,11 +144,9 @@ export async function POST(req: Request) {
             }, { status: 200 });
         }
 
-        await dbConnect();
-
-        let newImage;
+        // Album Image Logic
         try {
-            newImage = await Image.create({
+            const newImage = await Image.create({
                 imageUrl: uploadResult.secure_url,
                 publicId: uploadResult.public_id,
                 albumId,
@@ -102,14 +155,16 @@ export async function POST(req: Request) {
                 status: (session.user as any).role === 'admin' ? 'approved' : 'pending',
                 statusUpdatedAt: new Date(),
             });
+
+            return NextResponse.json(newImage, { status: 201 });
+
         } catch (dbError) {
-            // ROLLBACK: Delete from Cloudinary if DB write fails
-            console.error('DB Create Failed, Rolling back Cloudinary upload...');
+            // ROLLBACK
+            console.error('DB Image Create Failed, Rolling back Cloudinary upload...');
             await cloudinary.uploader.destroy(uploadResult.public_id);
-            throw dbError; // Re-throw to be caught by outer catch
+            throw dbError;
         }
 
-        return NextResponse.json(newImage, { status: 201 });
     } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

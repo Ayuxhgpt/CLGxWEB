@@ -3,6 +3,7 @@ import '@fontsource/inter'; // Use local font to avoid build network errors
 import './globals.css';
 
 import Providers from '@/components/Providers';
+import Footer from '@/components/Footer';
 
 // const inter = Inter({ subsets: ['latin'] }); // Removed due to network timeouts
 
@@ -18,8 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
+      <body className="font-sans antialiased min-h-screen flex flex-col">
+        <Providers>
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

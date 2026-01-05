@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
+type UserAction = 'PROMOTE' | 'DEMOTE' | 'BLOCK' | 'UNBLOCK';
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
@@ -16,9 +18,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         const body = await req.json();
-        const { action } = body; // PROMOTE, DEMOTE, BLOCK, UNBLOCK
+        const action: UserAction = body.action;
 
-        if (!action) return NextResponse.json({ message: 'Action required' }, { status: 400 });
+        const VALID_ACTIONS: UserAction[] = ['PROMOTE', 'DEMOTE', 'BLOCK', 'UNBLOCK'];
+        if (!VALID_ACTIONS.includes(action)) {
+            return NextResponse.json({ message: 'Invalid action' }, { status: 400 });
+        }
 
         await dbConnect();
         const targetUser = await User.findById(id);
@@ -27,71 +32,85 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // 2. Safety Rules
 
-        const SUPER_ADMIN = 'AyushGPT@gmail.com';  // Case-sensitive as stored? Ideally normalize.
-        // Assuming email is stored as is, but logic usually normalizes. 
-        // Let's implement case-insensitive check for reliability.
+        // Env Variable with Fallback
+        const SUPER_ADMIN_EMAIL = (process.env.SUPER_ADMIN_EMAIL || 'AyushGPT@gmail.com').toLowerCase();
+        const isSuperAdmin = adminUser.email.toLowerCase() === SUPER_ADMIN_EMAIL;
+        const isTargetSuperAdmin = targetUser.email.toLowerCase() === SUPER_ADMIN_EMAIL;
 
-        // Cannot modify self
-        if (targetUser._id.toString() === adminUser.id) {
-            return NextResponse.json({ message: 'You cannot modify your own account' }, { status: 400 });
+        // RULE A: Admin cannot block self
+        if (targetUser._id.toString() === adminUser.id && (action === 'BLOCK' || action === 'DEMOTE')) {
+            return NextResponse.json({ message: 'You cannot block or demote your own account' }, { status: 400 });
         }
 
-        // PROTECTION: SUPER ADMIN CANNOT BE TOUCHED
-        if (targetUser.email.toLowerCase() === SUPER_ADMIN.toLowerCase()) {
+        // RULE B: Super Admin Immunity
+        if (isTargetSuperAdmin) {
             return NextResponse.json({ message: 'Super Admin cannot be modified' }, { status: 403 });
         }
 
-        // AUTHORITY: ONLY SUPER ADMIN CAN PROMOTE/DEMOTE ADMINS
+        // RULE C: Only Super Admin can promote/demote admins
         if (action === 'PROMOTE' || action === 'DEMOTE') {
-            if (adminUser.email.toLowerCase() !== SUPER_ADMIN.toLowerCase()) {
+            if (!isSuperAdmin) {
                 return NextResponse.json({ message: 'Only Super Admin can manage admin roles' }, { status: 403 });
             }
         }
 
-        // Cannot Block/Demote other Admins (Prevent War)
+        // RULE D: Cannot Block/Demote the LAST Admin
+        // This applies if the target is an admin and the action removes their admin capability (BLOCK or DEMOTE)
         if (targetUser.role === 'admin' && (action === 'BLOCK' || action === 'DEMOTE')) {
-            if (action === 'DEMOTE' || action === 'BLOCK') {
-                const adminCount = await User.countDocuments({ role: 'admin' });
-                // If blocking an admin, we must treat them as 'removed' from active duty? 
-                // Effectively yes. If only 1 admin exists and we block them, no one can login as admin.
-                if (adminCount <= 1 && (action === 'DEMOTE' || (action === 'BLOCK' && !targetUser.isBlocked))) {
-                    return NextResponse.json({ message: 'Cannot demote or block the last admin' }, { status: 400 });
-                }
+            const adminCount = await User.countDocuments({ role: 'admin', isBlocked: false });
+            // If we are about to remove an admin, and count is 1, strictly forbid.
+            // Note: If we are blocking, we check if they are currently unblocked. 
+            // If we are demoting, we check if they are currently admin.
+
+            // Optimization: We already know targetUser.role === 'admin'.
+            // If action is BLOCK and they are seemingly active...
+            // Or if action is DEMOTE...
+
+            if (adminCount <= 1) {
+                return NextResponse.json({ message: 'Cannot remove the last active admin' }, { status: 400 });
             }
         }
 
-        // 3. Execute Action
+        // 3. Idempotency & Execution
         let updateData: { role?: string, isBlocked?: boolean } = {};
         let logMessage = '';
 
         switch (action) {
             case 'PROMOTE':
+                if (targetUser.role === 'admin') {
+                    return NextResponse.json({ message: 'User is already an admin', user: targetUser });
+                }
                 updateData = { role: 'admin' };
                 logMessage = `Promoted to Admin`;
                 break;
             case 'DEMOTE':
+                if (targetUser.role !== 'admin') {
+                    return NextResponse.json({ message: 'User is not an admin', user: targetUser });
+                }
                 updateData = { role: 'student' };
                 logMessage = `Demoted to Student`;
                 break;
             case 'BLOCK':
+                if (targetUser.isBlocked) {
+                    return NextResponse.json({ message: 'User is already blocked', user: targetUser });
+                }
                 updateData = { isBlocked: true };
                 logMessage = `Blocked User`;
                 break;
             case 'UNBLOCK':
+                if (!targetUser.isBlocked) {
+                    return NextResponse.json({ message: 'User is already active', user: targetUser });
+                }
                 updateData = { isBlocked: false };
                 logMessage = `Unblocked User`;
                 break;
-            default:
-                return NextResponse.json({ message: 'Invalid action' }, { status: 400 });
         }
 
-        await User.findByIdAndUpdate(id, updateData);
-
-        // TODO: Add Audit Log here if Audit Model exists
+        const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
 
         return NextResponse.json({
             message: `Success: ${logMessage}`,
-            user: { ...targetUser.toObject(), ...updateData }
+            user: updatedUser
         });
 
     } catch (error) {

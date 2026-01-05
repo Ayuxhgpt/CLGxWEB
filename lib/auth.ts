@@ -63,12 +63,20 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account }) {
             try {
-                if (account?.provider === 'google' || account?.provider === 'github') {
-                    await dbConnect();
-                    const existingUser = await User.findOne({ email: user.email });
+                await dbConnect();
 
+                // 1. Check if user exists by email first (for ALL providers)
+                const existingUser = await User.findOne({ email: user.email });
+
+                // 2. BLOCK CHECK: If user exists and is blocked, DENY ACCESS IMMEDIATELY
+                if (existingUser && existingUser.isBlocked) {
+                    console.log(`[AUTH] Blocked user attempt: ${user.email}`);
+                    return false; // Redirects to error page
+                }
+
+                if (account?.provider === 'google' || account?.provider === 'github') {
                     if (!existingUser) {
                         // Create new user for social login
                         await User.create({
@@ -81,9 +89,6 @@ export const authOptions: NextAuthOptions = {
                             password: '', // No password for social
                         });
                     } else {
-                        if (existingUser.isBlocked) {
-                            return false;
-                        }
                         // Link or update existing user
                         if (!existingUser.provider) {
                             existingUser.provider = account.provider;
@@ -99,7 +104,7 @@ export const authOptions: NextAuthOptions = {
                 return false;
             }
         },
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.role = user.role || 'student';
                 token.id = user.id;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '@/lib/validators/password';
 
 export async function POST(req: Request) {
     try {
@@ -9,6 +10,12 @@ export async function POST(req: Request) {
 
         if (!email || !otp || !newPassword) {
             return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
+        }
+
+        // Validate Password Complexity
+        const passwordValidation = validatePassword(newPassword);
+        if (!passwordValidation.isValid) {
+            return NextResponse.json({ message: passwordValidation.message }, { status: 400 });
         }
 
         await dbConnect();
@@ -20,12 +27,12 @@ export async function POST(req: Request) {
         }
 
         // Check Expiry
-        if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+        if (!user.resetTokenExpiresAt || new Date() > new Date(user.resetTokenExpiresAt)) {
             return NextResponse.json({ message: 'OTP has expired' }, { status: 400 });
         }
 
-        // Verify OTP
-        const isValid = await bcrypt.compare(otp, user.otp);
+        // Verify OTP against reset token hash
+        const isValid = await bcrypt.compare(otp, user.resetTokenHash);
         if (!isValid) {
             return NextResponse.json({ message: 'Invalid email or OTP' }, { status: 400 });
         }
@@ -35,8 +42,12 @@ export async function POST(req: Request) {
 
         // Update User
         user.password = hashedPassword;
-        user.otp = undefined;      // Clear OTP
+        user.resetTokenHash = undefined;    // Clear Token
+        user.resetTokenExpiresAt = undefined;
+        // Also clear invalid old OTP fields just in case
+        user.otp = undefined;
         user.otpExpiry = undefined;
+
         await user.save();
 
         return NextResponse.json({ message: 'Password updated successfully' }, { status: 200 });
