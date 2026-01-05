@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
         // 1. Size Limit (5MB - Vercel Serverless Limit)
         if (file.size > 5 * 1024 * 1024) {
-            return NextResponse.json({ error: 'File size too large (Max 4.5MB)' }, { status: 400 });
+            return NextResponse.json({ error: 'File size too large (Max 5MB)' }, { status: 400 });
         }
 
         // Determine folder & Validate Type
@@ -81,8 +81,14 @@ export async function POST(req: Request) {
 
         // Upload to Cloudinary stream
         const uploadResult = await new Promise<any>((resolve, reject) => {
+            const isPdf = file.type === 'application/pdf';
             cloudinary.uploader.upload_stream(
-                { folder, resource_type: file.type === 'application/pdf' ? 'auto' : 'image' }, // 'auto' for PDFs to be safe, though 'image' often works for PDFs in Cloudinary, 'raw' or 'auto' is better. Notes: Cloudinary usually treats PDF as image if you want previews, but let's stick to default behavior or auto.
+                {
+                    folder,
+                    // Phase 2 Fix: Strict Resource Type
+                    resource_type: isPdf ? 'raw' : 'image',
+                    // For PDFs as 'raw', we might lose preview but gain 100% upload reliability.
+                },
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);
