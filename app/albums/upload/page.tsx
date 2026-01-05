@@ -38,7 +38,18 @@ export default function UploadPage() {
             'application/pdf': ['.pdf']
         },
         maxFiles: 1,
-        multiple: false
+        maxSize: 4 * 1024 * 1024, // Limit to 4MB to restrict Vercel payload limit
+        multiple: false,
+        onDropRejected: (fileRejections) => {
+            const file = fileRejections[0];
+            if (file.errors[0].code === 'file-too-large') {
+                setStatus("error");
+                setErrorMessage("File is too large. Max limit is 4MB.");
+            } else {
+                setStatus("error");
+                setErrorMessage(file.errors[0].message);
+            }
+        }
     });
 
     const removeFile = (e: React.MouseEvent) => {
@@ -82,7 +93,18 @@ export default function UploadPage() {
                 body: formData,
             });
 
-            const data = await res.json();
+            let data;
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                // If it's a 413, standard nginx/vercel response
+                if (res.status === 413) {
+                    throw new Error("File too large for server (Limit: 4.5MB).");
+                }
+                throw new Error(text || "Upload failed with non-JSON response.");
+            }
 
             if (!res.ok) {
                 throw new Error(data.error || "Upload failed");
@@ -122,7 +144,7 @@ export default function UploadPage() {
                         <CardHeader>
                             <CardTitle>Upload Content</CardTitle>
                             <CardDescription>
-                                Share notes or images with the community. Max size 10MB.
+                                Share notes or images with the community. Max size 4MB.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">

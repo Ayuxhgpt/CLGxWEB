@@ -28,9 +28,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        // 1. Size Limit (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            return NextResponse.json({ error: 'File size too large (Max 10MB)' }, { status: 400 });
+        // 1. Size Limit (5MB - Vercel Serverless Limit)
+        if (file.size > 5 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File size too large (Max 4.5MB)' }, { status: 400 });
         }
 
         // Determine folder & Validate Type
