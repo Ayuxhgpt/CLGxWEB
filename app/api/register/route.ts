@@ -35,7 +35,6 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
-
         const reserved = ['admin', 'administrator', 'root', 'support', 'help', 'faculty', 'college', 'pharma', 'pharmaelevate', 'mod', 'moderator'];
         if (reserved.includes(username.toLowerCase())) {
             return NextResponse.json(

@@ -63,7 +63,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: genericMessage }, { status: 200 });
 
         } catch (emailError: any) {
-            console.error(`[AUTH-CRITICAL] Failed to send Forgot Password OTP to ${email}`, emailError);
+            console.error(`[AUTH-CRITICAL] Failed to send Forgot Password OTP to ${targetEmail}`, emailError);
             // In dev modes without a proper email setup, this often fails.
             // We should be clearer about the error if possible, or at least standardized.
             return NextResponse.json(
