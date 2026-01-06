@@ -54,10 +54,10 @@ export default function Navbar() {
                         <Image src="/assets/scp.jpg" alt="Logo" width={40} height={40} className="object-contain h-full w-full" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold leading-tight text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                        <h1 className="text-xl font-bold leading-tight text-foreground transition-colors">
                             PharmaElevate
                         </h1>
-                        <p className="text-[10px] text-[var(--text-muted)] font-medium tracking-wide uppercase">
+                        <p className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">
                             Satyadev College
                         </p>
                     </div>
@@ -73,27 +73,31 @@ export default function Navbar() {
                     </Link>
 
                     {/* Institute Dropdown */}
-                    <div className="relative group">
+                    <div className="relative group h-full flex items-center">
                         <Button variant="ghost" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1">
                             Institute <span className="text-[10px] opacity-50">▼</span>
                         </Button>
-                        <div className="absolute top-full left-0 mt-2 w-48 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden hidden group-hover:block transition-all z-50">
-                            <Link href="/college" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">College</Link>
-                            <Link href="/faculty" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Faculty</Link>
-                            <Link href="/about" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">About</Link>
+                        <div className="absolute top-full left-0 pt-2 w-48 hidden group-hover:block transition-all z-50">
+                            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden">
+                                <Link href="/college" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">College</Link>
+                                <Link href="/faculty" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Faculty</Link>
+                                <Link href="/about" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">About</Link>
+                            </div>
                         </div>
                     </div>
 
                     {/* Academics Dropdown */}
-                    <div className="relative group">
+                    <div className="relative group h-full flex items-center">
                         <Button variant="ghost" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1">
                             Academics <span className="text-[10px] opacity-50">▼</span>
                         </Button>
-                        <div className="absolute top-full left-0 mt-2 w-48 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden hidden group-hover:block transition-all z-50">
-                            <Link href="/albums" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Gallery</Link>
-                            <Link href="/pharma" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Knowledge</Link>
-                            <Link href="/notes" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Notes</Link>
-                            <Link href="/resources" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Resources</Link>
+                        <div className="absolute top-full left-0 pt-2 w-48 hidden group-hover:block transition-all z-50">
+                            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden">
+                                <Link href="/albums" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Gallery</Link>
+                                <Link href="/pharma" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Knowledge</Link>
+                                <Link href="/notes" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Notes</Link>
+                                <Link href="/resources" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Resources</Link>
+                            </div>
                         </div>
                     </div>
                 </nav>
@@ -171,9 +175,7 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <Link href="/login">
-                            <Button>
-                                Login
-                            </Button>
+                            <Button>Login</Button>
                         </Link>
                     )}
                 </div>
@@ -231,7 +233,7 @@ export default function Navbar() {
                                 </>
                             ) : (
                                 <Link href="/login" onClick={() => setIsOpen(false)}>
-                                    <Button className="w-full">Login</Button>
+                                    <div className="w-full bg-[var(--primary)] text-white text-center py-2 rounded-lg font-medium">Login</div>
                                 </Link>
                             )}
                         </div>

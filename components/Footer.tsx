@@ -7,10 +7,11 @@ export default function Footer() {
             <div className="container mx-auto px-4 md:px-6 py-8">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
-                        <p className="text-sm font-medium text-[var(--text-primary)]">
-                            PharmaElevate
+                        <h3 className="text-xl font-bold text-foreground">PharmaElevate</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
+                            Elevating pharmacy education with modern tools and resources.
                         </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
+                        <p className="text-xs text-muted-foreground">
                             &copy; {new Date().getFullYear()} Satyadev College. All rights reserved.
                         </p>
                     </div>
