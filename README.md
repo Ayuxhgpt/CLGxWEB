@@ -1,102 +1,102 @@
-# PharmaElevate v2 🚀
+# PharmaElevate v2.5 🚀
 
-**The Future of Pharmaceutical Education**
+**The Future of Pharmaceutical Education & Ecosystem**
 
-PharmaElevate is a comprehensive ecosystem designed for B.Pharm students, combining a learning hub, student community, and professional tools into a single platform. This repository represents the **v2 Full-Stack transition**, moving from a static site to a dynamic Next.js application.
+PharmaElevate is a high-performance, full-stack pharmaceutical ecosystem designed to digitize student learning, academic collaboration, and memory preservation for professional students. 
 
-## 🛠️ Tech Stack
+This repository represents the transition from a static presence to a **FAANG-standard dynamic application** built with the Next.js App Router.
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Custom CSS (Legacy Support)
-- **Database**: MongoDB Atlas (Mongoose ODM)
-- **Authentication**: NextAuth.js (Credentials Provider)
-- **Media Storage**: Cloudinary
-- **Email/OTP**: Resend
+---
+
+## 🏗️ Technical Architecture
+
+### Core Stack
+- **Framework**: [Next.js 15+](https://nextjs.org/) (Turbopack Enabled)
+- **Language**: TypeScript (Strict Type Safety)
+- **Styling**: Vanilla CSS + Tailwind CSS (Custom "Ladder" Design System)
+- **Database**: MongoDB Atlas via Mongoose ODM
+- **Authentication**: NextAuth.js (JWT Strategy, RBAC)
+- **File Management**: Cloudinary (Image/Note Streaming)
+- **Communications**: Resend (OTP Verification)
+
+### Performance & Security
+- **Atomic Rollbacks**: Cloudinary assets are automatically destroyed if database persistence fails.
+- **Middleware Shielding**: Admin routes (`/admin`, `/api/admin`) are protected at the edge via Next.js Middleware.
+- **Dynamic Permissioning**: User roles and block status are checked on every session refresh to ensure immediate access revocation.
+
+---
 
 ## ✨ Key Features
 
-### 🔐 Authentication & Security
-- **Secure Sign-up**: Registration requires Name, Email, Phone, and Year.
-- **Two-Factor Verification**: Email verification via **OTP** (powered by Resend) is mandatory.
-- **Role-Based Access**:
-  - **Student**: Access to dashboard, resources, and album upload.
-  - **Admin**: Full control to approve/reject uploads and manage content.
+### 🔐 Enterprise-Grade Auth
+- **Tri-Provider Support**: Google, GitHub, and Credentials-based login.
+- **OTP Verification**: Mandatory enrollment with security-first rate limiting and expiration.
+- **Security Checkpoints**: Real-time checking for blocked users and verified status.
 
-### 📚 Knowledge Hub
-- **Interactive Content**: "Core Concepts" and "Drug Profiles" with modern accordion UI.
-- **Resources**: Dedicated sections for Clinical Pharmacy, Industrial trends, and Artificial Intelligence in Pharma.
+### 📚 Professional Knowledge Hub
+- **Semantic Structure**: Course material organized by Semester and Subject.
+- **Dynamic Content**: Interactive "Drug Profiles" and "Core Concepts" using a custom deep-midnight design system.
+- **AI Readiness**: Structured data ready for the v3 recommendations engine.
 
-### 📸 Digital Album (MVP)
-- **Cloud Gallery**: Students can upload college memories.
-- **Moderation**: Uploads are "Pending" until approved by an Admin via the Dashboard.
-- **Optimized Images**: Served via Cloudinary CDNs for performance.
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-- Node.js 18+ installed.
-- MongoDB Atlas account.
-- Cloudinary account.
-- Resend API key.
-
-### 2. Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/PharmaElevate.git
-
-# Install dependencies
-npm install
-```
-
-### 3. Environment Variables
-Create a `.env.local` file in the root directory:
-
-```env
-# Database
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/pharma-elevate-v2
-
-# Authentication
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret_key
-
-# Cloudinary (Media)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Resend (Email/OTP)
-RESEND_API_KEY=re_123456789
-```
-
-### 4. Run Locally
-
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
-## 📂 Project Structure
-
-```
-PharmaElevate/
-├── app/                # Next.js App Router Pages & API
-│   ├── api/            # Backend Routes (Auth, Upload, Admin)
-│   ├── dashboard/      # Protected Student Dashboard
-│   ├── admin/          # Admin Moderation Panel
-│   ├── albums/         # Gallery & Upload UI
-│   └── pharma/         # Knowledge Hub
-├── components/         # Reusable UI Components
-├── lib/                # Database & Service Helpers
-├── models/             # Mongoose Data Models
-└── public/             # Static Assets
-```
-
-## 👥 Developers
-
-- **Ayush Gupta** - Lead Developer & Designer
-- **Saksham Gupta** - Research & Content Lead
+### 📸 Dynamic Album & Notes
+- **Student Pipeline**: Upload memories and study notes with real-time status tracking (Pending/Approved).
+- **Admin Governance**: Centralized moderation panel for content vetting.
+- **Optimized Delivery**: Automatic WebP conversion and CDN delivery via Cloudinary.
 
 ---
-*Built with ❤️ for Satyadev College of Pharmacy*
+
+## 🚀 Development & Setup
+
+### 1. Requirements
+- Node.js 20+
+- MongoDB Instance
+- Cloudinary Keys
+- Resend API Key
+
+### 2. Quick Start
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### 3. Environment Config (`.env.local`)
+```env
+MONGODB_URI=
+NEXTAUTH_SECRET=
+GITHUB_ID=
+GITHUB_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+RESEND_API_KEY=
+```
+
+---
+
+## 📂 System Map
+```text
+├── app/                # App Router (Pages & API Handlers)
+├── components/         # Atomic UI Components
+├── lib/                # Core Logic (Connectors, Auth, Schema)
+├── models/             # Mongoose Data Definitions
+├── public/             # Static Assets & Identity
+├── scripts/            # Management & Maintenance Scripts
+└── types/              # Global Type Definitions
+```
+
+---
+
+## 👥 Engineering Team
+- **Ayush Gupta** (@Ayuxhgpt) — Lead Product Engineer
+- **Saksham Gupta** — Content & Research Architecture
+
+---
+*Built with precision for Satyadev College of Pharmacy.*
