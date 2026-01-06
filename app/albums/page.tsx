@@ -99,7 +99,7 @@ export default function AlbumsPage() {
                                             {/* Image */}
                                             <div className="absolute inset-0">
                                                 <img
-                                                    src={album.coverImage || "/assists/scp.jpg"}
+                                                    src={album.coverImage || "/assets/scp.jpg"}
                                                     alt={album.title}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />

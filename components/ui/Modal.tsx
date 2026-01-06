@@ -56,14 +56,14 @@ export function Modal({
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             onKeyDown={(e) => e.key === "Escape" && onClose()}
                             className={cn(
-                                "w-full max-w-lg overflow-hidden rounded-xl border border-text/10 bg-surface shadow-2xl pointer-events-auto",
+                                "w-full max-w-lg overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-2xl pointer-events-auto",
                                 className
                             )}
                         >
-                            <div className="flex items-center justify-between p-6 border-b border-text/5">
+                            <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)]">
                                 <div>
-                                    {title && <h2 className="text-lg font-semibold text-text">{title}</h2>}
-                                    {description && <p className="text-sm text-text-secondary mt-1">{description}</p>}
+                                    {title && <h2 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>}
+                                    {description && <p className="text-sm text-[var(--text-secondary)] mt-1">{description}</p>}
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
                                     <X className="h-4 w-4" />
@@ -75,7 +75,7 @@ export function Modal({
                             </div>
 
                             {footer && (
-                                <div className="bg-surface-2/50 p-6 flex justify-end gap-2 border-t border-text/5">
+                                <div className="bg-[var(--bg-surface)] p-6 flex justify-end gap-2 border-t border-[var(--border-subtle)]">
                                     {footer}
                                 </div>
                             )}

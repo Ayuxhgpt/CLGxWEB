@@ -3,18 +3,18 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, FileText, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, FileText, CheckCircle2, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
+import Link from "next/link";
 
 export default function UploadPage() {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-    const [errorMessage, setErrorMessage] = useState("");
 
     // Metadata State
     const [title, setTitle] = useState("");
@@ -22,12 +22,11 @@ export default function UploadPage() {
     const [semester, setSemester] = useState("Semester 1");
 
     const router = useRouter();
+    const { toast } = useToast();
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles?.length > 0) {
             setFile(acceptedFiles[0]);
-            setStatus("idle");
-            setErrorMessage("");
         }
     }, []);
 
@@ -38,17 +37,15 @@ export default function UploadPage() {
             'application/pdf': ['.pdf']
         },
         maxFiles: 1,
-        maxSize: 4 * 1024 * 1024, // Limit to 4MB to restrict Vercel payload limit
+        maxSize: 4 * 1024 * 1024,
         multiple: false,
         onDropRejected: (fileRejections) => {
             const file = fileRejections[0];
-            if (file.errors[0].code === 'file-too-large') {
-                setStatus("error");
-                setErrorMessage("File is too large. Max limit is 4MB.");
-            } else {
-                setStatus("error");
-                setErrorMessage(file.errors[0].message);
-            }
+            toast({
+                type: "error",
+                message: "File Upload Error",
+                description: file.errors[0].message || "File rejected."
+            });
         }
     });
 
@@ -61,18 +58,19 @@ export default function UploadPage() {
         if (!file) return;
 
         setUploading(true);
-        setProgress(10); // Start progress
+        setProgress(10);
 
         const formData = new FormData();
         formData.append("file", file);
         formData.append("folder", file.type.startsWith("image/") ? "pharma_elevate_albums" : "pharma_elevate_notes");
 
-        // Add Metadata for Notes
         if (file.type === 'application/pdf') {
-            // Basic validation
             if (!title || !subject || !semester) {
-                setStatus("error");
-                setErrorMessage("Please fill in all fields (Title, Subject, Semester)");
+                toast({
+                    type: "error",
+                    message: "Missing Information",
+                    description: "Please fill in Title, Subject, and Semester."
+                });
                 setUploading(false);
                 return;
             }
@@ -82,12 +80,10 @@ export default function UploadPage() {
         }
 
         try {
-            // Simulate progress
             const interval = setInterval(() => {
                 setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
             }, 300);
 
-            // Step 1: Atomic Upload (Upload + Save DB)
             const res = await fetch("/api/upload", {
                 method: "POST",
                 body: formData,
@@ -99,32 +95,32 @@ export default function UploadPage() {
                 data = await res.json();
             } else {
                 const text = await res.text();
-                // If it's a 413, standard nginx/vercel response
-                if (res.status === 413) {
-                    throw new Error("File too large for server (Limit: 4.5MB).");
-                }
-                throw new Error(text || "Upload failed with non-JSON response.");
+                if (res.status === 413) throw new Error("File too large (Max 4.5MB).");
+                throw new Error("Upload failed.");
             }
 
-            if (!res.ok) {
-                throw new Error(data.error || "Upload failed");
-            }
-
-            // Success! Data contains the created Note/Image object (or just URL if no DB save triggered for generic images)
-            // For Notes, it returns the Note object.
+            if (!res.ok) throw new Error(data.error || "Upload failed");
 
             clearInterval(interval);
             setProgress(100);
 
-            setStatus("success");
+            toast({
+                type: "success",
+                message: "Upload Successful",
+                description: "Your content has been submitted for review."
+            });
+
             setTimeout(() => {
                 router.push("/dashboard");
             }, 2000);
 
         } catch (error: any) {
             console.error("Upload Logic Error:", error);
-            setStatus("error");
-            setErrorMessage(error.message || "Something went wrong");
+            toast({
+                type: "error",
+                message: "Upload Failed",
+                description: error.message || "Something went wrong."
+            });
             setProgress(0);
         } finally {
             setUploading(false);
@@ -136,10 +132,13 @@ export default function UploadPage() {
             <Navbar />
             <main className="max-w-4xl mx-auto px-4 pt-24 pb-12">
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }} /* Ladder1: 10px rise */
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                 >
+                    <Link href="/dashboard" className="inline-flex items-center text-sm text-[rgb(var(--text-secondary))] hover:text-[rgb(var(--primary))] mb-6 transition-colors">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+                    </Link>
                     <Card> {/* Defaults to ladder-card, no 'glass' prop needed */}
                         <CardHeader>
                             <CardTitle>Upload Content</CardTitle>
@@ -276,36 +275,11 @@ export default function UploadPage() {
                             </div>
 
                             {/* Status Messages */}
-                            <AnimatePresence>
-                                {status === "error" && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3"
-                                    >
-                                        <AlertCircle className="h-5 w-5" />
-                                        <span className="text-sm font-medium">{errorMessage}</span>
-                                    </motion.div>
-                                )}
-                                {status === "success" && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 flex items-center gap-3"
-                                    >
-                                        <CheckCircle2 className="h-5 w-5" />
-                                        <span className="text-sm font-medium">Upload successful! Redirecting...</span>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
                             {/* Actions */}
                             <div className="flex justify-end pt-4">
                                 <Button
                                     onClick={handleUpload}
-                                    disabled={!file || uploading || status === "success"}
+                                    disabled={!file || uploading}
                                     isLoading={uploading}
                                     size="lg"
                                     className="w-full sm:w-auto"

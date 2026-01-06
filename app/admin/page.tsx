@@ -192,7 +192,7 @@ export default function AdminDashboard() {
 
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-text-muted uppercase bg-bg-surface border-b border-border-subtle h-10">
+                                    <thead className="text-xs text-text-muted uppercase bg-[var(--bg-page)] border-b border-border-subtle h-10">
                                         <tr>
                                             <th className="px-6 font-medium w-1/3">Item</th>
                                             <th className="px-6 font-medium">Uploader</th>

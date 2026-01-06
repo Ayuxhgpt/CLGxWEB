@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
     const protectedPaths = ['/dashboard', '/profile', '/settings', '/albums/upload'];
 
     // Paths requiring Admin Role
-    const adminPaths = ['/admin'];
+    const adminPaths = ['/admin', '/api/admin'];
 
     // 1. Redirect if not logged in
     if (!token) {

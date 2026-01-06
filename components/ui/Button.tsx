@@ -12,7 +12,7 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-[rgb(var(--primary))] text-white hover:bg-[rgb(var(--primary-hover))] shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.6)] border border-transparent",
+                default: "bg-[rgb(var(--primary))] text-white hover:bg-[rgb(var(--primary-hover))] shadow-[0_0_20px_-5px_rgb(var(--primary)/0.4)] hover:shadow-[0_0_25px_-5px_rgb(var(--primary)/0.6)] border border-transparent",
                 destructive: "bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/20",
                 outline: "border border-[rgb(var(--border-subtle))] bg-transparent hover:bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))]",
                 secondary: "bg-[rgb(var(--bg-surface))] text-[rgb(var(--text-primary))] hover:bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))]",
@@ -65,7 +65,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         return (
             <motion.button
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.2 }}
                 className={cn(buttonVariants({ variant, size, className }))}
                 ref={ref}
                 disabled={isLoading || props.disabled}

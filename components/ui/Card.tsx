@@ -9,7 +9,7 @@ const Card = React.forwardRef<
         <div
             ref={ref}
             className={cn(
-                "ladder-card p-6", /* Strict Ladder1 Utility */
+                "saas-card p-6",
                 className
             )}
             {...props}

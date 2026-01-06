@@ -29,7 +29,7 @@ export default function Navbar() {
         { href: "/college", label: "College" },
         { href: "/faculty", label: "Faculty" },
         { href: "/about", label: "About" },
-        { href: "/gallery", label: "Gallery" },
+        { href: "/albums", label: "Gallery" },
         { href: "/pharma", label: "Knowledge" },
         { href: "/notes", label: "Notes" },
         { href: "/resources", label: "Resources" },
@@ -50,11 +50,11 @@ export default function Navbar() {
             <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
                 {/* Brand */}
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/10 shadow-lg group-hover:scale-105 transition-transform bg-black">
-                        <Image src="/assists/scp.jpg" alt="Logo" width={40} height={40} className="object-contain h-full w-full" />
+                    <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-[var(--border-subtle)] shadow-lg group-hover:scale-105 transition-transform bg-[var(--bg-surface)]">
+                        <Image src="/assets/scp.jpg" alt="Logo" width={40} height={40} className="object-contain h-full w-full" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-[var(--accent-primary)] transition-all">
+                        <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)] group-hover:to-[var(--accent-primary)] transition-all">
                             PharmaElevate
                         </h1>
                         <p className="text-[10px] text-[var(--text-muted)] font-medium tracking-wide uppercase">
@@ -100,7 +100,7 @@ export default function Navbar() {
                             {/* Profile Dropdown */}
                             <div className="relative group" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
                                 <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[2px] cursor-pointer hover:shadow-lg hover:shadow-purple-500/20 transition-all">
-                                    <div className="h-full w-full rounded-full bg-[var(--bg-main)] flex items-center justify-center overflow-hidden">
+                                    <div className="h-full w-full rounded-full bg-[var(--bg-page)] flex items-center justify-center overflow-hidden">
                                         {session.user?.image ? (
                                             <Image
                                                 src={session.user.image}
@@ -124,7 +124,7 @@ export default function Navbar() {
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                             transition={{ duration: 0.15 }}
-                                            className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] shadow-xl overflow-hidden p-2"
+                                            className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-xl overflow-hidden p-2"
                                         >
                                             <div className="px-3 py-2 border-b border-[var(--border-subtle)] mb-2">
                                                 <p className="text-sm font-bold text-[var(--text-primary)] truncate">{session.user?.name}</p>
@@ -132,12 +132,12 @@ export default function Navbar() {
                                             </div>
 
                                             <Link href="/profile" onClick={() => setIsProfileOpen(false)}>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface-2)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
+                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
                                                     <User className="h-4 w-4" /> My Profile
                                                 </div>
                                             </Link>
                                             <Link href="/settings" onClick={() => setIsProfileOpen(false)}>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface-2)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
+                                                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-surface)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
                                                     <Settings className="h-4 w-4" /> Settings
                                                 </div>
                                             </Link>
@@ -155,7 +155,7 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <Link href="/login">
-                            <Button className="bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-black border-transparent shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+                            <Button>
                                 Login
                             </Button>
                         </Link>

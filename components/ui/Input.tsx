@@ -8,6 +8,8 @@ export interface InputProps
     icon?: React.ReactNode;
 }
 
+import { motion } from "framer-motion";
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, type, label, error, icon, ...props }, ref) => {
         return (
@@ -17,7 +19,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         {label} <span className="text-red-500/80">{props.required ? '*' : ''}</span>
                     </label>
                 )}
-                <div className="relative group">
+                <motion.div
+                    className="relative group"
+                    animate={error ? { x: [0, -10, 10, -5, 5, 0] } : {}}
+                    transition={{ duration: 0.4, type: "spring" }}
+                >
                     {icon && (
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgb(var(--text-muted))] transition-colors group-focus-within:text-[rgb(var(--primary))]">
                             {icon}
@@ -26,15 +32,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     <input
                         type={type}
                         className={cn(
-                            "flex h-12 w-full ladder-input px-4 py-3 text-sm placeholder:text-[rgb(var(--text-muted))] file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50",
+                            "flex h-12 w-full saas-input px-4 py-3 text-sm placeholder:text-[rgb(var(--text-muted))] file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50",
                             icon && "pl-11",
-                            error && "border-red-500/50 focus:border-red-500 text-red-500 rounded-xl", /* Error state shake handled by parent or animation */
+                            error && "border-red-500/50 focus:border-red-500 text-red-500 rounded-xl",
                             className
                         )}
                         ref={ref}
                         {...props}
                     />
-                </div>
+                </motion.div>
                 {error && (
                     <p className="text-xs font-medium text-red-400 animate-in slide-in-from-top-1 fade-in">
                         {error}

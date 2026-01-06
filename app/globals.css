@@ -3,25 +3,33 @@
 @layer base {
   :root {
     /* 
-      🌞 LIGHT MODE (Academic / Clean)
-      - White/Slate palette
-      - High contrast borders
-      - Soft shadows
+      🌞 LIGHT MODE (Academic / Trustworthy)
+      - Background: Off-white Warmth (#f8fafc)
+      - Text: High contrast Slate-900 for readability
     */
-    --bg-page: 255 255 255;      /* #ffffff */
-    --bg-surface: 248 250 252;   /* #f8fafc (slate-50) */
-    --bg-card: 255 255 255;      /* #ffffff */
+    --bg-page: 248 250 252;
+    /* #f8fafc (slate-50) */
+    --bg-surface: 255 255 255;
+    /* #ffffff */
+    --bg-card: 255 255 255;
+    /* #ffffff */
 
-    --border-subtle: 226 232 240;    /* #e2e8f0 (slate-200) */
-    --border-highlight: 203 213 225; /* #cbd5e1 (slate-300) */
+    --border-subtle: 241 245 249;
+    /* #f1f5f9 (slate-100) */
+    --border-highlight: 203 213 225;
+    /* #cbd5e1 (slate-300) */
 
-    --text-primary: 15 23 42;    /* #0f172a (slate-900) */
-    --text-secondary: 71 85 105; /* #475569 (slate-600) */
-    --text-muted: 148 163 184;   /* #94a3b8 (slate-400) */
+    --text-primary: 15 23 42;
+    /* #0f172a (slate-900) */
+    --text-secondary: 71 85 105;
+    /* #475569 (slate-600) */
+    --text-muted: 148 163 184;
+    /* #94a3b8 (slate-400) */
 
-    --primary: 16 185 129;           /* #10b981 (emerald-500) */
+    --primary: 16 185 129;
+    /* #10b981 (emerald-500) */
     --primary-foreground: 255 255 255;
-    
+
     --accent-primary: 16 185 129;
 
     --radius: 0.5rem;
@@ -29,23 +37,32 @@
 
   .dark {
     /* 
-      🌙 DARK MODE (Modern / Dashboard)
-      - Deep Slate/Abyss
-      - Border-based separation (less shadow reliance)
-      - Glowing accents
+      🌙 DARK MODE (Modern / Premium)
+      - Background: Deepest Slate
+      - Surface: Layered Slate-900
+      - Borders: Define the structure
     */
-    --bg-page: 2 6 23;           /* #020617 (slate-950) */
-    --bg-surface: 15 23 42;      /* #0f172a (slate-900) */
-    --bg-card: 30 41 59;         /* #1e293b (slate-800) */
+    --bg-page: 2 6 23;
+    /* #020617 (slate-950) */
+    --bg-surface: 15 23 42;
+    /* #0f172a (slate-900) */
+    --bg-card: 30 41 59;
+    /* #1e293b (slate-800) */
 
-    --border-subtle: 30 41 59;       /* #1e293b (slate-800) */
-    --border-highlight: 51 65 85;    /* #334155 (slate-700) */
+    --border-subtle: 30 41 59;
+    /* #1e293b (slate-800) */
+    --border-highlight: 51 65 85;
+    /* #334155 (slate-700) */
 
-    --text-primary: 248 250 252;     /* #f8fafc (slate-50) */
-    --text-secondary: 148 163 184;   /* #94a3b8 (slate-400) */
-    --text-muted: 100 116 139;       /* #64748b (slate-500) */
+    --text-primary: 248 250 252;
+    /* #f8fafc (slate-50) */
+    --text-secondary: 148 163 184;
+    /* #94a3b8 (slate-400) */
+    --text-muted: 100 116 139;
+    /* #64748b (slate-500) */
 
-    --primary: 52 211 153;           /* #34d399 (emerald-400) */
+    --primary: 52 211 153;
+    /* #34d399 (emerald-400) */
     --primary-foreground: 2 6 23;
   }
 
@@ -60,6 +77,7 @@
 }
 
 @layer utilities {
+
   /* SaaS Card - Mode Adaptive */
   .saas-card {
     background-color: rgb(var(--bg-card));
@@ -68,25 +86,28 @@
     transition: all 200ms ease-in-out;
   }
 
-  /* Light Mode: Soft Shadows */
+  /* Light Mode: Soft Shadows & Warmth */
   :root:not(.dark) .saas-card {
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
   }
+
   :root:not(.dark) .saas-card:hover {
     border-color: rgb(var(--border-highlight));
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   }
 
-  /* Dark Mode: Border Separation */
+  /* Dark Mode: Depth & Glow */
   .dark .saas-card {
-    box-shadow: none; /* Minimal/No shadow in dark mode */
-  }
-  .dark .saas-card:hover {
-    border-color: rgb(var(--primary) / 0.3); /* Subtle glow on hover */
-    background-color: rgb(var(--bg-surface)); /* Slight lift */
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0));
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
-  /* SaaS Input */
+  .dark .saas-card:hover {
+    border-color: rgb(var(--primary) / 0.4);
+    box-shadow: 0 0 15px -3px rgb(var(--primary) / 0.1);
+  }
+
+  /* SaaS Input - Focus Glow */
   .saas-input {
     background-color: rgb(var(--bg-surface));
     border: 1px solid rgb(var(--border-subtle));
@@ -101,7 +122,15 @@
   .saas-input:focus {
     outline: none;
     border-color: rgb(var(--primary));
-    box-shadow: 0 0 0 2px rgba(var(--primary), 0.2);
+    box-shadow:
+      0 0 0 2px rgba(var(--primary), 0.1),
+      0 0 8px 0 rgba(var(--primary), 0.1);
+  }
+
+  .dark .saas-input:focus {
+    box-shadow:
+      0 0 0 1px rgba(var(--primary), 0.3),
+      0 0 15px -3px rgba(var(--primary), 0.2);
   }
 
   .saas-input::placeholder {
