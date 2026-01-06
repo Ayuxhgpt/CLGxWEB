@@ -34,6 +34,7 @@ export async function POST(req: Request) {
         const paramsToSign = {
             timestamp,
             folder,
+            access_mode: 'public',
             // upload_preset, // Optional if using signed upload without preset
         };
 

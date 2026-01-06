@@ -143,6 +143,7 @@ export default function AdminDashboard() {
             clData.append("timestamp", timestamp.toString());
             clData.append("signature", signature);
             clData.append("folder", folder);
+            clData.append("access_mode", "public");
 
             const clRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/raw/upload`, {
                 method: "POST",

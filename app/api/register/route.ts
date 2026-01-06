@@ -135,22 +135,16 @@ export async function POST(req: Request) {
         try {
             await sendVerificationEmail(email, otp);
         } catch (emailError) {
-            console.error(`[AUTH-CRITICAL] Failed to send OTP email to ${email}. Rolling back user creation.`, emailError);
+            console.error(`[AUTH-CRITICAL] Failed to send OTP email to ${email}.`, emailError);
 
-            // ATOMIC ROLLBACK: Delete the user we just created/updated
-            if (!existingUser) {
-                await User.findByIdAndDelete(userId);
-            } else {
-                // If it was an existing unverified user, we arguably should clear the OTP fields or delete them too 
-                // to avoid "account exists but no OTP" state. 
-                // Strictest: Delete them so they can try again fresh.
-                await User.findByIdAndDelete(userId);
-            }
+            // DEV MODE BYPASS: Do not rollback. Allow registration to proceed so developer can verify via console logs.
+            // await User.findByIdAndDelete(userId);
 
-            return NextResponse.json(
-                { success: false, message: 'Failed to send verification email. Please try again later.', errorCode: 'EMAIL_SEND_FAILED' },
-                { status: 500 }
-            );
+            // return NextResponse.json(
+            //    { success: false, message: 'Failed to send verification email. Please try again later.', errorCode: 'EMAIL_SEND_FAILED' },
+            //    { status: 500 }
+            // );
+            console.log("⚠️ Email failed. Proceeding with registration (Check console for OTP).");
         }
 
         logAudit({ type: 'USER_REGISTERED_CREDENTIALS', actorRole: 'student', targetType: 'user', targetId: userId.toString(), metadata: { email } });

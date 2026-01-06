@@ -108,6 +108,7 @@ export default function UploadPage() {
             clData.append("timestamp", timestamp.toString());
             clData.append("signature", signature);
             clData.append("folder", folder);
+            clData.append("access_mode", "public");
 
             const resourceType = file.type === 'application/pdf' ? 'raw' : 'image';
             const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/${resourceType}/upload`;
