@@ -55,13 +55,21 @@ export async function POST(req: Request) {
 
             return NextResponse.json({ message: genericMessage }, { status: 200 });
 
-        } catch (emailError) {
+        } catch (emailError: any) {
             console.error(`[AUTH-CRITICAL] Failed to send Forgot Password OTP to ${email}`, emailError);
-            return NextResponse.json({ message: 'Failed to send OTP. Please try again.' }, { status: 500 });
+            // In dev modes without a proper email setup, this often fails.
+            // We should be clearer about the error if possible, or at least standardized.
+            return NextResponse.json(
+                { success: false, message: 'Failed to send OTP. Email service may be unavailable.', errorCode: 'EMAIL_SEND_FAILED' },
+                { status: 500 }
+            );
         }
 
     } catch (error) {
         console.error("Forgot Password Error:", error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json(
+            { success: false, message: 'Internal Server Error', errorCode: 'INTERNAL_ERROR' },
+            { status: 500 }
+        );
     }
 }

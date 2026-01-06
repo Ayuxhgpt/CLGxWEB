@@ -29,17 +29,23 @@ export default function ForgotPasswordPage() {
                 body: JSON.stringify({ email }),
             });
 
-            const data = await res.json();
+            const result = await res.json();
 
             if (res.ok) {
-                setMessage("Reset link sent to your email.");
-                setTimeout(() => {
-                    router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-                }, 2000);
+                if (result.success || res.status === 200) { // Handle legacy 200 OK or new success:true
+                    setMessage(result.message || "Reset link sent to your email.");
+                    setTimeout(() => {
+                        router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+                    }, 2000);
+                } else {
+                    setError(result.message || "Failed to send reset link");
+                    setIsLoading(false);
+                }
             } else {
-                setError(data.message || "Failed to send reset link");
+                setError(result.message || "Failed to send reset link");
                 setIsLoading(false);
             }
+
         } catch (err) {
             setError("Something went wrong");
             setIsLoading(false);
