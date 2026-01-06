@@ -64,7 +64,14 @@ export default function AdminDashboard() {
             if (Array.isArray(data)) {
                 setPendingData({ images: data, notes: [] });
             } else {
-                setPendingData({ images: data.images || [], notes: data.notes || [] });
+                const images = data.images || [];
+                const notes = data.notes || [];
+                setPendingData({ images, notes });
+
+                // UX Improvement: Auto-switch to notes if images are empty but notes are pending
+                if (images.length === 0 && notes.length > 0) {
+                    setActiveTab('notes');
+                }
             }
         } catch (error) {
             console.error(error);
