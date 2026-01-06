@@ -54,7 +54,7 @@ export default function Navbar() {
                         <Image src="/assets/scp.jpg" alt="Logo" width={40} height={40} className="object-contain h-full w-full" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)] group-hover:to-[var(--accent-primary)] transition-all">
+                        <h1 className="text-xl font-bold leading-tight text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                             PharmaElevate
                         </h1>
                         <p className="text-[10px] text-[var(--text-muted)] font-medium tracking-wide uppercase">
@@ -64,22 +64,38 @@ export default function Navbar() {
                 </Link>
 
                 {/* Desktop Nav */}
+                {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-1">
-                    {navLinks.map((link) => (
-                        <Link key={link.href} href={link.href}>
-                            <Button
-                                variant="ghost"
-                                className={cn(
-                                    "text-sm font-medium transition-colors",
-                                    isActive(link.href)
-                                        ? "text-[var(--text-primary)] bg-[var(--bg-surface)]"
-                                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                                )}
-                            >
-                                {link.label}
-                            </Button>
-                        </Link>
-                    ))}
+                    <Link href="/">
+                        <Button variant="ghost" className={cn("text-sm font-medium", isActive("/") ? "text-[var(--text-primary)] bg-[var(--bg-surface)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}>
+                            Home
+                        </Button>
+                    </Link>
+
+                    {/* Institute Dropdown */}
+                    <div className="relative group">
+                        <Button variant="ghost" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1">
+                            Institute <span className="text-[10px] opacity-50">▼</span>
+                        </Button>
+                        <div className="absolute top-full left-0 mt-2 w-48 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden hidden group-hover:block transition-all z-50">
+                            <Link href="/college" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">College</Link>
+                            <Link href="/faculty" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Faculty</Link>
+                            <Link href="/about" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">About</Link>
+                        </div>
+                    </div>
+
+                    {/* Academics Dropdown */}
+                    <div className="relative group">
+                        <Button variant="ghost" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1">
+                            Academics <span className="text-[10px] opacity-50">▼</span>
+                        </Button>
+                        <div className="absolute top-full left-0 mt-2 w-48 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden hidden group-hover:block transition-all z-50">
+                            <Link href="/albums" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Gallery</Link>
+                            <Link href="/pharma" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Knowledge</Link>
+                            <Link href="/notes" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Notes</Link>
+                            <Link href="/resources" className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]">Resources</Link>
+                        </div>
+                    </div>
                 </nav>
 
                 {/* Desktop Actions */}

@@ -25,21 +25,27 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error('Please provide email and password');
+                    throw new Error('Please provide email/username and password');
                 }
 
                 await dbConnect();
 
-                // Find user
-                const user = await User.findOne({ email: credentials.email });
+                // Find user by Email OR Username
+                const identifier = credentials.email.toLowerCase(); // 'email' field in creds carries the input
+                const user = await User.findOne({
+                    $or: [
+                        { email: identifier },
+                        { username: identifier }
+                    ]
+                });
 
                 // Verify password (if user exists)
                 const isValid = user && user.password && await bcrypt.compare(credentials.password, user.password);
 
                 // Generic error to prevent enumeration
                 if (!user || !isValid) {
-                    logAudit({ type: 'LOGIN_FAILURE', metadata: { email: credentials.email, reason: 'Invalid credentials' } });
-                    throw new Error('Invalid email or password');
+                    logAudit({ type: 'LOGIN_FAILURE', metadata: { identifier, reason: 'Invalid credentials' } });
+                    throw new Error('Invalid credentials');
                 }
 
                 if (!user.isVerified) {

@@ -7,15 +7,20 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
     try {
-        const { email } = await req.json();
+        const { email: identifier } = await req.json(); // We reuse 'email' field or rename it in frontend
 
-        if (!email) {
-            return NextResponse.json({ message: 'Email is required' }, { status: 400 });
+        if (!identifier) {
+            return NextResponse.json({ message: 'Email or Username is required' }, { status: 400 });
         }
 
         await dbConnect();
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({
+            $or: [
+                { email: identifier },
+                { username: identifier.toLowerCase() }
+            ]
+        });
 
         // GENERIC RESPONSE MSG
         const genericMessage = 'If an account exists with this email, you will receive a reset code.';
@@ -47,11 +52,13 @@ export async function POST(req: Request) {
         user.resetTokenExpiresAt = otpExpiry;
         await user.save();
 
-        // Send Email
+        // Send Email (Always use user.email, not the identifier which could be a username)
+        const targetEmail = user.email;
+
         try {
-            console.log(`[AUTH-FORGOT] Sending Reset OTP to ${email}`);
-            await sendVerificationEmail(email, otp); // Using same email function for now
-            console.log(`[AUTH-FORGOT] Reset OTP sent to ${email}`);
+            console.log(`[AUTH-FORGOT] Sending Reset OTP to ${targetEmail}`);
+            await sendVerificationEmail(targetEmail, otp);
+            console.log(`[AUTH-FORGOT] Reset OTP sent to ${targetEmail}`);
 
             return NextResponse.json({ message: genericMessage }, { status: 200 });
 

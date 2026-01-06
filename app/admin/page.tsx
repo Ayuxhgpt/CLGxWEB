@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import {
     Upload, FileText, CheckCircle, ShieldAlert, Check, X,
-    MoreHorizontal, Filter, Search, Calendar, User, ArrowRight
+    MoreHorizontal, Filter, Search, Calendar, User, ArrowRight, FolderPlus
 } from "lucide-react";
 import NextImage from "next/image";
 
@@ -46,6 +46,11 @@ export default function AdminDashboard() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadingNote, setUploadingNote] = useState(false);
     const [uploadError, setUploadError] = useState("");
+
+    // Album Creation State
+    const [albumForm, setAlbumForm] = useState({ title: "", description: "", year: new Date().getFullYear().toString() });
+    const [creatingAlbum, setCreatingAlbum] = useState(false);
+
     const { toast } = useToast();
     const router = useRouter();
 
@@ -192,6 +197,44 @@ export default function AdminDashboard() {
             setUploadError(err.message || "Upload failed.");
         } finally {
             setUploadingNote(false);
+        }
+    };
+
+    const handleAlbumCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreatingAlbum(true);
+
+        try {
+            const res = await fetch("/api/albums", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(albumForm),
+            });
+
+            if (res.ok) {
+                toast({
+                    type: "success",
+                    message: "Album Created",
+                    description: `Album "${albumForm.title}" created successfully.`
+                });
+                setAlbumForm({ title: "", description: "", year: new Date().getFullYear().toString() });
+            } else {
+                const data = await res.json();
+                toast({
+                    type: "error",
+                    message: "Creation Failed",
+                    description: data.error || "Failed to create album."
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            toast({
+                type: "error",
+                message: "System Error",
+                description: "Failed to communicate with the server."
+            });
+        } finally {
+            setCreatingAlbum(false);
         }
     };
 
@@ -376,6 +419,52 @@ export default function AdminDashboard() {
                         transition={{ delay: 0.2 }}
                         className="space-y-6"
                     >
+                        <div className="bg-bg-card border border-border-subtle rounded-xl p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                                    <FolderPlus className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-text-primary">Create Album</h3>
+                                    <p className="text-xs text-text-secondary">For event photos.</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleAlbumCreate} className="space-y-4">
+                                <Input
+                                    label="Album Title"
+                                    placeholder="e.g. Annual Fest 2026"
+                                    value={albumForm.title}
+                                    onChange={(e) => setAlbumForm({ ...albumForm, title: e.target.value })}
+                                    className="saas-input"
+                                    required
+                                />
+                                <Input
+                                    label="Description"
+                                    placeholder="Short description..."
+                                    value={albumForm.description}
+                                    onChange={(e) => setAlbumForm({ ...albumForm, description: e.target.value })}
+                                    className="saas-input"
+                                />
+                                <Input
+                                    label="Year"
+                                    type="number"
+                                    value={albumForm.year}
+                                    onChange={(e) => setAlbumForm({ ...albumForm, year: e.target.value })}
+                                    className="saas-input"
+                                    required
+                                />
+                                <Button
+                                    type="submit"
+                                    className="w-full mt-2 bg-purple-600 hover:bg-purple-700"
+                                    disabled={creatingAlbum}
+                                    isLoading={creatingAlbum}
+                                >
+                                    Create Album
+                                </Button>
+                            </form>
+                        </div>
+
                         <div className="bg-bg-card border border-border-subtle rounded-xl p-6 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">

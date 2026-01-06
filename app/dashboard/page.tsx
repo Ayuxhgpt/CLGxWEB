@@ -81,6 +81,11 @@ export default function Dashboard() {
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
+                        <Link href="/">
+                            <Button variant="outline" className="h-11 px-4 rounded-lg hidden md:flex border-border-subtle hover:bg-bg-surface">
+                                <ArrowRight className="mr-2 h-4 w-4 rotate-180" /> Back to Home
+                            </Button>
+                        </Link>
                         <Link href="/albums/upload">
                             <Button className="h-11 px-6 rounded-lg text-sm font-semibold tracking-wide">
                                 <Upload className="mr-2 h-4 w-4" /> Upload Resource

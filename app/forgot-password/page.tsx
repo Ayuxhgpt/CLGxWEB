@@ -88,11 +88,11 @@ export default function ForgotPasswordPage() {
                 <div className="ladder-card p-8 md:p-10 bg-[rgb(var(--bg-card))]">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <Input
-                            type="email"
-                            label="Email Address"
+                            type="text"
+                            label="Email or Username"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
+                            placeholder="Enter your email or username"
                             required
                             className="bg-[rgb(var(--bg-surface))]"
                         />
