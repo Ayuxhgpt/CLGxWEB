@@ -41,13 +41,13 @@ export default function RegisterPage() {
             setUsernameStatus('checking');
             try {
                 const res = await fetch(`/api/username/check?username=${form.username}`);
-                const data = await res.json();
-                if (data.available) {
+                const result = await res.json();
+                if (result.success && result.data?.available) {
                     setUsernameStatus('available');
                     setUsernameMessage("Username is available!");
                 } else {
                     setUsernameStatus('taken');
-                    setUsernameMessage(data.error || "Username is taken.");
+                    setUsernameMessage(result.message || "Username is taken.");
                 }
             } catch (err) {
                 setUsernameStatus('idle');

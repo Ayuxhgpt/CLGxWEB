@@ -8,7 +8,7 @@ export async function GET() {
     await dbConnect();
     try {
         const albums = await Album.find({}).sort({ createdAt: -1 });
-        return NextResponse.json(albums);
+        return NextResponse.json({ success: true, data: albums });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch albums' }, { status: 500 });
     }
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
             createdBy: (session.user as any).id,
         });
 
-        return NextResponse.json(album, { status: 201 });
+        return NextResponse.json({ success: true, data: album }, { status: 201 });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to create album' }, { status: 500 });
     }

@@ -5,6 +5,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
+import { logAudit } from '@/lib/audit';
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -37,6 +38,7 @@ export const authOptions: NextAuthOptions = {
 
                 // Generic error to prevent enumeration
                 if (!user || !isValid) {
+                    logAudit({ type: 'LOGIN_FAILURE', metadata: { email: credentials.email, reason: 'Invalid credentials' } });
                     throw new Error('Invalid email or password');
                 }
 
@@ -72,7 +74,7 @@ export const authOptions: NextAuthOptions = {
 
                 // 2. BLOCK CHECK: If user exists and is blocked, DENY ACCESS IMMEDIATELY
                 if (existingUser && existingUser.isBlocked) {
-                    console.log(`[AUTH] Blocked user attempt: ${user.email}`);
+                    logAudit({ type: 'LOGIN_BLOCKED', actorId: existingUser._id.toString(), targetType: 'user', metadata: { email: user.email } });
                     return false; // Redirects to error page
                 }
 
@@ -88,6 +90,7 @@ export const authOptions: NextAuthOptions = {
                             isVerified: true, // Auto-verify social logins
                             password: '', // No password for social
                         });
+                        logAudit({ type: 'USER_REGISTERED', actorRole: 'system', targetType: 'user', metadata: { email: user.email, provider: account.provider } });
                     } else {
                         // Link or update existing user
                         if (!existingUser.provider) {
@@ -98,9 +101,11 @@ export const authOptions: NextAuthOptions = {
                         }
                     }
                 }
+                logAudit({ type: 'LOGIN_SUCCESS', actorId: existingUser?._id.toString() || 'unknown', targetType: 'auth', metadata: { email: user.email, provider: account?.provider } });
                 return true;
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Social Signin Error:", error);
+                logAudit({ type: 'AUTH_SYSTEM_ERROR', status: 'failure', metadata: { error: error.message } });
                 return false;
             }
         },

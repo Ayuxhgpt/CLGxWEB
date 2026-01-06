@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Image from '@/models/Image';
 import Note from '@/models/Note';
+import User from '@/models/User';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(req: Request) {
@@ -16,17 +17,35 @@ export async function GET(req: Request) {
         await dbConnect();
 
         // Stats Logic
-        const uploadsCount = await Image.countDocuments({ uploadedBy: (session.user as any).id });
-        const notesCount = await Note.countDocuments({ uploadedBy: (session.user as any).id });
+        const [uploadsCount, notesCount] = await Promise.all([
+            Image.countDocuments({ uploadedBy: (session.user as any).id }),
+            Note.countDocuments({ uploadedBy: (session.user as any).id })
+        ]);
+
+        // Calculate reputation: 10 per image, 20 per note (more valuable)
+        const reputation = (uploadsCount * 10) + (notesCount * 20);
+
+        // Simple streak logic: If lastLogin was today or yesterday
+        const user = await User.findById((session.user as any).id).select('lastLogin');
+        let streak = 0;
+        if (user?.lastLogin) {
+            const lastLoginDate = new Date(user.lastLogin).toDateString();
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+            if (lastLoginDate === today || lastLoginDate === yesterday) {
+                streak = 1; // Basic 'active' status for now
+            }
+        }
 
         // Fetch recent activity (Combined Images & Notes)
         const [recentImages, recentNotes] = await Promise.all([
             Image.find({ uploadedBy: (session.user as any).id })
                 .sort({ createdAt: -1 })
-                .limit(5),
+                .limit(10), // Increased limit to 10 for a truly unified feed
             Note.find({ uploadedBy: (session.user as any).id })
                 .sort({ createdAt: -1 })
-                .limit(5)
+                .limit(10) // Increased limit to 10 for a truly unified feed
         ]);
 
         const mergedActivity = [
@@ -50,10 +69,14 @@ export async function GET(req: Request) {
             .slice(0, 5);
 
         return NextResponse.json({
-            uploads: uploadsCount + notesCount,
-            notesSaved: notesCount,
-            streak: 1, // Gamification placeholder
-            recentUploads: mergedActivity
+            success: true,
+            data: {
+                uploads: uploadsCount + notesCount,
+                notesSaved: notesCount,
+                reputation: reputation,
+                streak: streak,
+                recentUploads: mergedActivity
+            }
         }, { status: 200 });
 
     } catch (error) {

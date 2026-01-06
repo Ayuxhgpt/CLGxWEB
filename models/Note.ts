@@ -19,6 +19,10 @@ const NoteSchema = new mongoose.Schema({
         type: String,
         required: [true, 'PDF URL is required'],
     },
+    publicId: {
+        type: String,
+        required: [true, 'Cloudinary Public ID is required for deletion'],
+    },
     uploadedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -44,6 +48,10 @@ const NoteSchema = new mongoose.Schema({
         default: null
     },
     likes: {
+        type: Number,
+        default: 0
+    },
+    downloadCount: {
         type: Number,
         default: 0
     },

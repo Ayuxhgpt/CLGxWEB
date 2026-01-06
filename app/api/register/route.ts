@@ -5,6 +5,7 @@ import User from '@/models/User';
 import { sendVerificationEmail } from '@/lib/email';
 import crypto from 'crypto';
 import { validatePassword } from '@/lib/validators/password';
+import { logAudit } from '@/lib/audit';
 
 export async function POST(req: Request) {
     try {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
 
         if (!name || !email || !password || !phone || !username) {
             return NextResponse.json(
-                { message: 'Missing required fields' },
+                { success: false, message: 'Missing required fields', errorCode: 'MISSING_FIELDS' },
                 { status: 400 }
             );
         }
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return NextResponse.json(
-                { message: 'Invalid email format' },
+                { success: false, message: 'Invalid email format', errorCode: 'INVALID_EMAIL' },
                 { status: 400 }
             );
         }
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
         const usernameRegex = /^[a-z0-9_.]{3,20}$/;
         if (!usernameRegex.test(username)) {
             return NextResponse.json(
-                { message: 'Invalid username format' },
+                { success: false, message: 'Invalid username format', errorCode: 'INVALID_USERNAME' },
                 { status: 400 }
             );
         }
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
         const reserved = ['admin', 'administrator', 'root', 'support', 'help', 'faculty', 'college', 'pharma', 'pharmaelevate', 'mod', 'moderator'];
         if (reserved.includes(username.toLowerCase())) {
             return NextResponse.json(
-                { message: 'Username is reserved' },
+                { success: false, message: 'Username is reserved', errorCode: 'RESERVED_USERNAME' },
                 { status: 400 }
             );
         }
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
         const passwordValidation = validatePassword(password);
         if (!passwordValidation.isValid) {
             return NextResponse.json(
-                { message: passwordValidation.message },
+                { success: false, message: passwordValidation.message, errorCode: 'WEAK_PASSWORD' },
                 { status: 400 }
             );
         }
@@ -61,14 +62,14 @@ export async function POST(req: Request) {
         const existingUsername = await User.findOne({ username: username.toLowerCase() });
         if (existingUsername) {
             if (!existingUser || existingUsername._id.toString() !== existingUser._id.toString()) {
-                return NextResponse.json({ message: 'Username is taken' }, { status: 400 });
+                return NextResponse.json({ success: false, message: 'Username is taken', errorCode: 'USERNAME_TAKEN' }, { status: 400 });
             }
         }
 
         if (existingUser) {
             if (existingUser.isVerified) {
                 return NextResponse.json(
-                    { message: 'User already exists' },
+                    { success: false, message: 'User already exists', errorCode: 'USER_EXISTS' },
                     { status: 400 }
                 );
             }
@@ -132,38 +133,35 @@ export async function POST(req: Request) {
 
         // Send OTP
         try {
-            console.log(`[AUTH] Sending OTP to ${email} (UserID: ${userId})`);
             await sendVerificationEmail(email, otp);
-            console.log(`[AUTH] OTP sent successfully to ${email}`);
         } catch (emailError) {
             console.error(`[AUTH-CRITICAL] Failed to send OTP email to ${email}. Rolling back user creation.`, emailError);
 
             // ATOMIC ROLLBACK: Delete the user we just created/updated
             if (!existingUser) {
                 await User.findByIdAndDelete(userId);
-                console.log(`[AUTH-CRITICAL] Rollback successful: User ${userId} deleted.`);
             } else {
                 // If it was an existing unverified user, we arguably should clear the OTP fields or delete them too 
                 // to avoid "account exists but no OTP" state. 
                 // Strictest: Delete them so they can try again fresh.
                 await User.findByIdAndDelete(userId);
-                console.log(`[AUTH-CRITICAL] Rollback successful: Existing unverified User ${userId} deleted.`);
             }
 
             return NextResponse.json(
-                { message: 'Failed to send verification email. Please try again later.' },
+                { success: false, message: 'Failed to send verification email. Please try again later.', errorCode: 'EMAIL_SEND_FAILED' },
                 { status: 500 }
             );
         }
 
+        logAudit({ type: 'USER_REGISTERED_CREDENTIALS', actorRole: 'student', targetType: 'user', targetId: userId.toString(), metadata: { email } });
         return NextResponse.json(
-            { message: 'User registered. Please verify your email.', userId, email },
+            { success: true, message: 'User registered. Please verify your email.', data: { userId, email } },
             { status: 201 }
         );
     } catch (error) {
         console.error('Registration error:', error);
         return NextResponse.json(
-            { message: 'Internal server error' },
+            { success: false, message: 'Internal server error', errorCode: 'INTERNAL_ERROR' },
             { status: 500 }
         );
     }

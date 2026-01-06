@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/Toast";
 import {
     Upload, FileText, CheckCircle, ShieldAlert, Check, X,
     MoreHorizontal, Filter, Search, Calendar, User, ArrowRight
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadingNote, setUploadingNote] = useState(false);
     const [uploadError, setUploadError] = useState("");
+    const { toast } = useToast();
     const router = useRouter();
 
     useEffect(() => {
@@ -73,14 +75,34 @@ export default function AdminDashboard() {
 
     const handleAction = async (id: string, action: "approve" | "delete", type: "image" | "note") => {
         try {
-            await fetch("/api/admin/approve", {
+            const res = await fetch("/api/admin/approve", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, action, type }),
             });
-            fetchPending();
+
+            if (res.ok) {
+                toast({
+                    type: "success",
+                    message: "Status Updated",
+                    description: `Successfully ${action}d the ${type}.`
+                });
+                fetchPending();
+            } else {
+                const data = await res.json();
+                toast({
+                    type: "error",
+                    message: "Action Failed",
+                    description: data.message || "Something went wrong."
+                });
+            }
         } catch (error) {
             console.error(error);
+            toast({
+                type: "error",
+                message: "System Error",
+                description: "Failed to communicate with the server."
+            });
         }
     };
 
@@ -95,34 +117,75 @@ export default function AdminDashboard() {
 
         setUploadingNote(true);
         try {
-            const formData = new FormData();
-            formData.append("file", selectedFile);
-            formData.append("folder", "pharma_elevate_notes");
-            formData.append("title", noteForm.title);
-            formData.append("subject", noteForm.subject);
-            formData.append("semester", noteForm.semester);
+            // 1. Get Signature
+            const folder = "pharma_elevate_notes";
+            const timestamp = Math.round(new Date().getTime() / 1000);
 
+            const signRes = await fetch("/api/upload/sign", {
+                method: "POST",
+                body: JSON.stringify({ folder, timestamp }),
+            });
+
+            if (!signRes.ok) throw new Error("Failed to get upload signature");
+            const { signature, api_key, cloud_name } = await signRes.json();
+
+            // 2. Direct Cloudinary Upload
+            const clData = new FormData();
+            clData.append("file", selectedFile);
+            clData.append("api_key", api_key);
+            clData.append("timestamp", timestamp.toString());
+            clData.append("signature", signature);
+            clData.append("folder", folder);
+
+            const clRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/raw/upload`, {
+                method: "POST",
+                body: clData,
+            });
+
+            if (!clRes.ok) {
+                const errorData = await clRes.json();
+                throw new Error(errorData.error?.message || "Cloudinary upload failed");
+            }
+
+            const clResult = await clRes.json();
+
+            // 3. Metadata Sync
             const res = await fetch("/api/upload", {
                 method: "POST",
-                body: formData
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    secure_url: clResult.secure_url,
+                    public_id: clResult.public_id,
+                    folder,
+                    title: noteForm.title,
+                    subject: noteForm.subject,
+                    semester: noteForm.semester
+                })
             });
 
             if (res.ok) {
-                alert("Note published successfully!");
+                toast({
+                    type: "success",
+                    message: "Note Published",
+                    description: "Note published and auto-approved successfully."
+                });
                 setNoteForm({ title: "", semester: "Semester 1", subject: "" });
                 setSelectedFile(null);
-                // If it was pending (non-admin?), we'd fetchPending(). But admin auto-approves.
             } else {
                 const data = await res.json();
-                alert("Failed to upload note: " + (data.error || "Unknown error"));
+                toast({
+                    type: "error",
+                    message: "Upload Failed",
+                    description: data.message || "Unknown error"
+                });
             }
-        } catch (err) {
-            console.error(err);
-            setUploadError("Upload failed.");
+        } catch (err: any) {
+            console.error("Admin Upload Pipeline Failure:", err);
+            setUploadError(err.message || "Upload failed.");
         } finally {
             setUploadingNote(false);
         }
-    }
+    };
 
     const handlePdfSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

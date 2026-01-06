@@ -18,7 +18,7 @@ export async function GET(req: Request) {
 
         const notes = await Note.find(query).sort({ createdAt: -1 }).populate('uploadedBy', 'name');
 
-        return NextResponse.json(notes, { status: 200 });
+        return NextResponse.json({ success: true, data: notes }, { status: 200 });
     } catch (error) {
         console.error('Notes fetch error:', error);
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
@@ -34,9 +34,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { title, subject, semester, pdfUrl } = body;
+        const { title, subject, semester, pdfUrl, publicId } = body;
 
-        if (!title || !subject || !semester || !pdfUrl) {
+        if (!title || !subject || !semester || !pdfUrl || !publicId) {
             return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
         }
 
@@ -58,13 +58,14 @@ export async function POST(req: Request) {
             subject,
             semester,
             pdfUrl,
+            publicId,
             uploadedBy: session.user.id,
             status: status,
             statusUpdatedAt: new Date(),
             approvedBy: approvedBy
         });
 
-        return NextResponse.json({ message: 'Note created', note: newNote }, { status: 201 });
+        return NextResponse.json({ success: true, message: 'Note created', data: newNote }, { status: 201 });
     } catch (error) {
         console.error('Note creation error:', error);
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
@@ -86,9 +87,18 @@ export async function DELETE(req: Request) {
         }
 
         await dbConnect();
+        const note = await Note.findById(id);
+        if (!note) return NextResponse.json({ message: 'Note not found' }, { status: 404 });
+
+        // Cloudinary Cleanup
+        if (note.publicId) {
+            const cloudinary = (await import('@/lib/cloudinary')).default;
+            await cloudinary.uploader.destroy(note.publicId, { resource_type: 'raw' });
+        }
+
         await Note.findByIdAndDelete(id);
 
-        return NextResponse.json({ message: 'Note deleted' }, { status: 200 });
+        return NextResponse.json({ success: true, message: 'Note deleted permanently' }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: 'Error deleting note' }, { status: 500 });
     }

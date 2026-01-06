@@ -27,14 +27,17 @@ export default function Dashboard() {
             try {
                 const res = await fetch('/api/user/stats');
                 if (res.ok) {
-                    const data = await res.json();
-                    setStats({
-                        notes: data.notesSaved || 0,
-                        uploads: data.uploads || 0,
-                        streak: data.streak || 0,
-                        reputation: (data.uploads || 0) * 10,
-                        recentUploads: data.recentUploads || []
-                    });
+                    const result = await res.json();
+                    if (result.success && result.data) {
+                        const data = result.data;
+                        setStats({
+                            notes: data.notesSaved || 0,
+                            uploads: data.uploads || 0,
+                            streak: data.streak || 0,
+                            reputation: (data.uploads || 0) * 10,
+                            recentUploads: data.recentUploads || []
+                        });
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch stats");

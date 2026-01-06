@@ -42,8 +42,10 @@ export default function NotesPage() {
 
                 const res = await fetch(`/api/notes?${params.toString()}`);
                 if (res.ok) {
-                    const data = await res.json();
-                    setNotes(data);
+                    const result = await res.json();
+                    if (result.success && result.data) {
+                        setNotes(result.data);
+                    }
                 }
             } catch (error) {
                 console.error(error);
@@ -145,7 +147,7 @@ export default function NotesPage() {
                                     </div>
 
                                     <div className="mt-auto pt-4 border-t border-[var(--border-subtle)]">
-                                        <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                        <a href={`/api/notes/download?id=${note._id}`} target="_blank" rel="noopener noreferrer">
                                             <Button variant="secondary" className="w-full group-hover:bg-[var(--accent-primary)] group-hover:text-white group-hover:border-transparent transition-all">
                                                 <Download className="mr-2 h-4 w-4" /> Download PDF
                                             </Button>

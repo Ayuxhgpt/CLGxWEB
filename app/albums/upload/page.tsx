@@ -20,15 +20,41 @@ export default function UploadPage() {
     const [title, setTitle] = useState("");
     const [subject, setSubject] = useState("");
     const [semester, setSemester] = useState("Semester 1");
+    const [albumId, setAlbumId] = useState("");
+    const [albums, setAlbums] = useState<any[]>([]);
+    const [loadingAlbums, setLoadingAlbums] = useState(false);
 
     const router = useRouter();
     const { toast } = useToast();
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        if (acceptedFiles?.length > 0) {
-            setFile(acceptedFiles[0]);
+    const fetchAlbums = useCallback(async () => {
+        setLoadingAlbums(true);
+        try {
+            const res = await fetch("/api/albums");
+            if (res.ok) {
+                const result = await res.json();
+                if (result.success && result.data) {
+                    const data = result.data;
+                    setAlbums(data);
+                    if (data.length > 0) setAlbumId(data[0]._id);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch albums:", error);
+        } finally {
+            setLoadingAlbums(false);
         }
     }, []);
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        if (acceptedFiles?.length > 0) {
+            const droppedFile = acceptedFiles[0];
+            setFile(droppedFile);
+            if (droppedFile.type.startsWith("image/")) {
+                fetchAlbums();
+            }
+        }
+    }, [fetchAlbums]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -58,52 +84,70 @@ export default function UploadPage() {
         if (!file) return;
 
         setUploading(true);
-        setProgress(10);
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", file.type.startsWith("image/") ? "pharma_elevate_albums" : "pharma_elevate_notes");
-
-        if (file.type === 'application/pdf') {
-            if (!title || !subject || !semester) {
-                toast({
-                    type: "error",
-                    message: "Missing Information",
-                    description: "Please fill in Title, Subject, and Semester."
-                });
-                setUploading(false);
-                return;
-            }
-            formData.append("title", title);
-            formData.append("subject", subject);
-            formData.append("semester", semester);
-        }
+        setProgress(5);
 
         try {
-            const interval = setInterval(() => {
-                setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
-            }, 300);
+            // 1. Get Signature from our backend
+            const folder = file.type.startsWith("image/") ? "pharma_elevate_albums" : "pharma_elevate_notes";
+            const timestamp = Math.round(new Date().getTime() / 1000);
 
-            const res = await fetch("/api/upload", {
+            const signRes = await fetch("/api/upload/sign", {
                 method: "POST",
-                body: formData,
+                body: JSON.stringify({ folder, timestamp }),
             });
 
-            let data;
-            const contentType = res.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                data = await res.json();
-            } else {
-                const text = await res.text();
-                if (res.status === 413) throw new Error("File too large (Max 4.5MB).");
-                throw new Error("Upload failed.");
+            if (!signRes.ok) throw new Error("Failed to get upload signature");
+            const { signature, api_key, cloud_name } = await signRes.json();
+
+            setProgress(20);
+
+            // 2. Upload DIRECTLY to Cloudinary
+            const clData = new FormData();
+            clData.append("file", file);
+            clData.append("api_key", api_key);
+            clData.append("timestamp", timestamp.toString());
+            clData.append("signature", signature);
+            clData.append("folder", folder);
+
+            const resourceType = file.type === 'application/pdf' ? 'raw' : 'image';
+            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/${resourceType}/upload`;
+
+            const clRes = await fetch(cloudinaryUrl, {
+                method: "POST",
+                body: clData,
+            });
+
+            if (!clRes.ok) {
+                const errorData = await clRes.json();
+                throw new Error(errorData.error?.message || "Cloudinary upload failed");
             }
 
-            if (!res.ok) throw new Error(data.error || "Upload failed");
+            const clResult = await clRes.json();
+            setProgress(70);
 
-            clearInterval(interval);
+            // 3. Send Metadata to our backend for DB entry
+            const backendPayload = {
+                secure_url: clResult.secure_url,
+                public_id: clResult.public_id,
+                folder,
+                albumId: file.type.startsWith("image/") ? albumId : null,
+                title,
+                subject,
+                semester,
+            };
+
+            const backendRes = await fetch("/api/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(backendPayload),
+            });
+
+            if (!backendRes.ok) {
+                const errorData = await backendRes.json();
+                throw new Error(errorData.message || "Database synchronization failed");
+            }
+
             setProgress(100);
-
             toast({
                 type: "success",
                 message: "Upload Successful",
@@ -115,7 +159,7 @@ export default function UploadPage() {
             }, 2000);
 
         } catch (error: any) {
-            console.error("Upload Logic Error:", error);
+            console.error("v3.0 Upload Pipeline Failure:", error);
             toast({
                 type: "error",
                 message: "Upload Failed",
@@ -188,6 +232,39 @@ export default function UploadPage() {
                                                 ))}
                                             </select>
                                         </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Album Selection (Only for Images) */}
+                            {file?.type.startsWith('image/') && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="space-y-4 p-4 bg-[rgb(var(--bg-surface))] rounded-xl border border-[rgb(var(--border-subtle))]"
+                                >
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-secondary))]">Select Album</label>
+                                        {loadingAlbums ? (
+                                            <div className="flex items-center space-x-2 text-sm text-[rgb(var(--text-secondary))] italic">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Loading albums...</span>
+                                            </div>
+                                        ) : albums.length > 0 ? (
+                                            <select
+                                                value={albumId}
+                                                onChange={(e) => setAlbumId(e.target.value)}
+                                                className="w-full p-2 rounded-lg bg-[rgb(var(--bg-main))] border border-[rgb(var(--border-subtle))] focus:border-[rgb(var(--primary))] text-[rgb(var(--text-primary))] outline-none transition-all"
+                                            >
+                                                {albums.map((album) => (
+                                                    <option key={album._id} value={album._id}>
+                                                        {album.title} ({album.year})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <p className="text-sm text-amber-500">No albums found. Admins must create an album first.</p>
+                                        )}
                                     </div>
                                 </motion.div>
                             )}
