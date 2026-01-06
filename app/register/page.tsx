@@ -10,8 +10,10 @@ import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { ArrowRight, Home, Eye, EyeOff, User, Mail, Lock, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { logFrontendAudit } from "@/lib/audit-client";
+
 export default function RegisterPage() {
-    const [form, setForm] = useState({ name: "", username: "", email: "", phone: "", password: "", confirmPassword: "" });
+    const [form, setForm] = useState({ name: "", username: "", email: "", phone: "", password: "", confirmPassword: "", year: "1st Year" });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -58,14 +60,46 @@ export default function RegisterPage() {
         return () => clearTimeout(timeoutId);
     }, [form.username]);
 
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setIsLoading(true);
 
+        // Track Form Submit
+        logFrontendAudit({
+            domain: 'AUTH',
+            action: 'FORM_SUBMIT_CLICKED',
+            result: 'SUCCESS',
+            metadata: { email: form.email, username: form.username }
+        });
+
+        // Basic Client Validation
+        if (!form.name || !form.email || !form.password || !form.year || !form.username) {
+            setError("All fields are required");
+            setIsLoading(false);
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'UI_ERROR_SHOWN',
+                result: 'FAIL',
+                errorCategory: 'VALIDATION',
+                errorMessage: 'Missing fields',
+                metadata: { formState: form }
+            });
+            return;
+        }
+
         if (form.password !== form.confirmPassword) {
             setError("Passwords do not match");
             setIsLoading(false);
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'UI_ERROR_SHOWN',
+                result: 'FAIL',
+                errorCategory: 'VALIDATION',
+                errorMessage: 'Passwords do not match'
+            });
             return;
         }
 
@@ -84,12 +118,45 @@ export default function RegisterPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message || "Registration failed");
+            if (!res.ok) {
+                // Log API Failure seen by Frontend
+                logFrontendAudit({
+                    domain: 'AUTH',
+                    action: 'API_CALL_FAILED',
+                    result: 'FAIL',
+                    errorCategory: 'AUTH', // Could be VALIDATION or UNKNOWN
+                    errorMessage: data.message || "Registration failed",
+                    metadata: { statusCode: res.status }
+                });
+                throw new Error(data.message || "Registration failed");
+            }
+
+            // Log Success
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'REGISTRATION_SUCCESS_CLIENT',
+                result: 'SUCCESS',
+                metadata: { email: form.email }
+            });
+
+            // DEV HELP: Log OTP to console for user
+            if (data.data?.debug_otp) {
+                console.log("%c [DEV MODE] YOUR OTP IS: " + data.data.debug_otp, "background: #222; color: #bada55; font-size: 20px; padding: 10px;");
+                alert(`[DEV MODE] OTP: ${data.data.debug_otp}`); // Fallback alert for immediate visibility
+            }
 
             // Redirect to verify page with email
             router.push(`/verify?email=${encodeURIComponent(form.email)}`);
         } catch (err: any) {
             setError(err.message);
+            // Log Unhandled Exception
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'REGISTRATION_EXCEPTION_CLIENT',
+                result: 'FAIL',
+                errorCategory: 'UNKNOWN',
+                errorMessage: err.message
+            });
         } finally {
             setIsLoading(false);
         }

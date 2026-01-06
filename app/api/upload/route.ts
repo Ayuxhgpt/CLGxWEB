@@ -11,10 +11,23 @@ import { logAudit } from '@/lib/audit';
  * PharmaElevate v3.0 - Metadata Upload API
  * Backend no longer receives file blobs.
  * Receives Cloudinary results + metadata from frontend.
+ * Tracks Atomic Lifecycle: Upload -> DB -> Rollback
  */
 export async function POST(req: Request) {
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const startTime = Date.now();
+
+    // 1. Auth Check
     const session = await getServerSession(authOptions);
     if (!session) {
+        logAudit({
+            domain: 'UPLOAD',
+            action: 'UPLOAD_UNAUTHORIZED',
+            result: 'FAIL',
+            errorCategory: 'AUTH',
+            errorMessage: 'User not logged in',
+            requestId
+        });
         return NextResponse.json({ success: false, message: 'Unauthorized', errorCode: 'AUTH_REQUIRED' }, { status: 401 });
     }
 
@@ -28,26 +41,69 @@ export async function POST(req: Request) {
             caption,
             title,
             subject,
-            semester
+            semester,
+            type // Added type field for general uploads if needed
         } = body;
 
+        // 2. Validate Payload
         if (!secure_url || !public_id) {
+            logAudit({
+                domain: 'UPLOAD',
+                action: 'UPLOAD_INVALID_PAYLOAD',
+                result: 'FAIL',
+                errorCategory: 'VALIDATION',
+                errorMessage: 'Missing Cloudinary secure_url or public_id',
+                userId: (session.user as any).id,
+                requestId
+            });
             return NextResponse.json({ success: false, message: 'Missing Cloudinary result data', errorCode: 'INVALID_PAYLOAD' }, { status: 400 });
         }
 
-        await dbConnect();
         const userId = (session.user as any).id;
+        const userRole = (session.user as any).role;
+
+        // 3. Log Start
+        logAudit({
+            domain: 'UPLOAD',
+            action: 'UPLOAD_STARTED',
+            result: 'SUCCESS',
+            userId: userId,
+            userRole: userRole,
+            requestId,
+            metadata: { public_id, folder, albumId, title }
+        });
+
+        await dbConnect();
 
         // ---------------------------------------------------------
         // HANDLE NOTES (PDF)
         // ---------------------------------------------------------
-        if (folder === 'pharma_elevate_notes') {
+        if (folder === 'pharma_elevate_notes' || type === 'note') {
             if (!title || !subject || !semester) {
+                logAudit({
+                    domain: 'UPLOAD',
+                    action: 'UPLOAD_VALIDATION_FAIL',
+                    result: 'FAIL',
+                    errorCategory: 'VALIDATION',
+                    errorMessage: 'Missing fields for note',
+                    userId: userId,
+                    requestId
+                });
                 return NextResponse.json({ success: false, message: 'Missing required metadata for notes', errorCode: 'MISSING_FIELDS' }, { status: 400 });
             }
 
             try {
-                const isAdmin = (session.user as any).role === 'admin';
+                const isAdmin = userRole === 'admin';
+
+                logAudit({
+                    domain: 'UPLOAD',
+                    action: 'DB_SAVE_ATTEMPT',
+                    result: 'SUCCESS',
+                    userId: userId,
+                    requestId,
+                    metadata: { type: 'note', title }
+                });
+
                 const newNote = await Note.create({
                     title,
                     subject,
@@ -61,55 +117,96 @@ export async function POST(req: Request) {
                 });
 
                 logAudit({
-                    type: 'NOTE_CREATED',
-                    actorId: userId,
-                    actorRole: (session.user as any).role,
+                    domain: 'UPLOAD',
+                    action: 'UPLOAD_COMPLETED',
+                    result: 'SUCCESS',
+                    userId: userId,
                     targetType: 'note',
                     targetId: newNote._id.toString(),
-                    metadata: { title, subject, semester, publicId: public_id }
+                    requestId,
+                    durationMs: Date.now() - startTime,
+                    metadata: { title, publicId: public_id }
                 });
 
                 return NextResponse.json({ success: true, message: 'Note uploaded successfully', data: newNote }, { status: 201 });
 
             } catch (dbError: any) {
-                console.error('DB Note Create Failed, Rolling back Cloudinary upload...');
-
-                // ATOMIC ROLLBACK: Remove orphan file from Cloudinary
-                await cloudinary.uploader.destroy(public_id, { resource_type: 'raw' });
+                console.error('DB Note Create Failed, Rolling back Cloudinary upload...', dbError);
 
                 logAudit({
-                    type: 'UPLOAD_ROLLBACK',
-                    actorId: userId,
-                    targetType: 'note',
-                    status: 'failure',
-                    metadata: { publicId: public_id, error: dbError.message }
+                    domain: 'UPLOAD',
+                    action: 'DB_SAVE_FAIL',
+                    result: 'FAIL',
+                    errorCategory: 'DATABASE',
+                    errorMessage: dbError.message,
+                    userId: userId,
+                    requestId,
+                    metadata: { publicId: public_id }
                 });
 
-                throw dbError;
+                // ATOMIC ROLLBACK: Remove orphan file from Cloudinary
+                try {
+                    await cloudinary.uploader.destroy(public_id, { resource_type: 'raw' });
+                    logAudit({
+                        domain: 'UPLOAD',
+                        action: 'ROLLBACK_SUCCESS',
+                        result: 'SUCCESS',
+                        userId: userId,
+                        requestId,
+                        metadata: { publicId: public_id, reason: 'DB Save Failed' }
+                    });
+                } catch (rollbackError: any) {
+                    console.error("CRITICAL: Rollback failed for", public_id, rollbackError);
+                    logAudit({
+                        domain: 'UPLOAD',
+                        action: 'ROLLBACK_FAIL',
+                        result: 'FAIL',
+                        errorCategory: 'UNKNOWN', // Critical Orphan File
+                        errorMessage: rollbackError.message,
+                        userId: userId,
+                        requestId,
+                        metadata: { public_id, originalError: dbError.message }
+                    });
+                }
+
+                throw dbError; // Re-throw to hit outer catch if needed, or return error response
+                return NextResponse.json({ success: false, message: 'Database save failed', errorCode: 'DB_ERROR' }, { status: 500 });
             }
         }
 
         // ---------------------------------------------------------
         // HANDLE IMAGES / ALBUMS
         // ---------------------------------------------------------
-        if (albumId) {
+        if (albumId || type === 'image') {
             try {
+                logAudit({
+                    domain: 'UPLOAD',
+                    action: 'DB_SAVE_ATTEMPT',
+                    result: 'SUCCESS',
+                    userId: userId,
+                    requestId,
+                    metadata: { type: 'image', albumId }
+                });
+
                 const newImage = await Image.create({
                     imageUrl: secure_url,
                     publicId: public_id,
                     albumId,
                     uploadedBy: userId,
                     caption: caption || '',
-                    status: (session.user as any).role === 'admin' ? 'approved' : 'pending',
+                    status: userRole === 'admin' ? 'approved' : 'pending',
                     statusUpdatedAt: new Date(),
                 });
 
                 logAudit({
-                    type: 'IMAGE_UPLOADED',
-                    actorId: userId,
-                    actorRole: (session.user as any).role,
+                    domain: 'UPLOAD',
+                    action: 'UPLOAD_COMPLETED',
+                    result: 'SUCCESS',
+                    userId: userId,
                     targetType: 'image',
                     targetId: newImage._id.toString(),
+                    requestId,
+                    durationMs: Date.now() - startTime,
                     metadata: { albumId, publicId: public_id }
                 });
 
@@ -117,18 +214,41 @@ export async function POST(req: Request) {
 
             } catch (dbError: any) {
                 console.error('DB Image Create Failed, Rolling back Cloudinary upload...');
-                // ATOMIC ROLLBACK
-                await cloudinary.uploader.destroy(public_id);
 
                 logAudit({
-                    type: 'UPLOAD_ROLLBACK',
-                    actorId: userId,
-                    targetType: 'image',
-                    status: 'failure',
-                    metadata: { publicId: public_id, error: dbError.message }
+                    domain: 'UPLOAD',
+                    action: 'DB_SAVE_FAIL',
+                    result: 'FAIL',
+                    errorCategory: 'DATABASE',
+                    errorMessage: dbError.message,
+                    userId: userId,
+                    requestId
                 });
 
-                throw dbError;
+                // ATOMIC ROLLBACK
+                try {
+                    await cloudinary.uploader.destroy(public_id);
+                    logAudit({
+                        domain: 'UPLOAD',
+                        action: 'ROLLBACK_SUCCESS',
+                        result: 'SUCCESS',
+                        userId: userId,
+                        requestId,
+                        metadata: { publicId: public_id }
+                    });
+                } catch (rollbackError: any) {
+                    logAudit({
+                        domain: 'UPLOAD',
+                        action: 'ROLLBACK_FAIL',
+                        result: 'FAIL',
+                        errorCategory: 'UNKNOWN',
+                        errorMessage: rollbackError.message,
+                        userId: userId,
+                        requestId
+                    });
+                }
+
+                return NextResponse.json({ success: false, message: 'Database save failed', errorCode: 'DB_ERROR' }, { status: 500 });
             }
         }
 
@@ -144,10 +264,13 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error('Metadata API error:', error);
         logAudit({
-            type: 'UPLOAD_FAILED',
-            actorId: (session.user as any).id,
-            status: 'failure',
-            metadata: { error: error.message }
+            domain: 'UPLOAD',
+            action: 'UPLOAD_CRASH',
+            result: 'FAIL',
+            errorCategory: 'UNKNOWN',
+            errorMessage: error.message,
+            requestId,
+            durationMs: Date.now() - startTime
         });
         return NextResponse.json({ success: false, message: 'Failed to process metadata', errorCode: 'INTERNAL_ERROR' }, { status: 500 });
     }

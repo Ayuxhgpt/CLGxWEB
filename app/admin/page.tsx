@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logFrontendAudit } from "@/lib/audit-client";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -58,11 +60,38 @@ export default function AdminDashboard() {
         if (session && session.user.role !== "admin") {
             router.push("/dashboard");
         } else if (session) {
-            fetchPending();
+            logFrontendAudit({
+                domain: 'ADMIN',
+                action: 'ADMIN_DASHBOARD_VIEW',
+                result: 'SUCCESS',
+            });
+            fetchPendingContent();
         }
     }, [session]);
 
-    const fetchPending = async () => {
+    // Track Admin View
+    useEffect(() => {
+        if (session?.user) {
+            logFrontendAudit({
+                domain: 'ADMIN',
+                action: 'ADMIN_DASHBOARD_VIEW',
+                result: 'SUCCESS',
+            });
+        }
+    }, [session]);
+
+    // Track Tab Switch
+    const handleTabChange = (tab: 'images' | 'notes') => {
+        setActiveTab(tab);
+        logFrontendAudit({
+            domain: 'ADMIN',
+            action: 'ADMIN_VIEW_TAB',
+            result: 'SUCCESS',
+            metadata: { tab }
+        });
+    };
+
+    const fetchPendingContent = async () => {
         try {
             const res = await fetch("/api/admin/pending");
             const data = await res.json();
@@ -75,7 +104,7 @@ export default function AdminDashboard() {
 
                 // UX Improvement: Auto-switch to notes if images are empty but notes are pending
                 if (images.length === 0 && notes.length > 0) {
-                    setActiveTab('notes');
+                    handleTabChange('notes'); // Use handleTabChange here
                 }
             }
         } catch (error) {
@@ -86,14 +115,31 @@ export default function AdminDashboard() {
     };
 
     const handleAction = async (id: string, action: "approve" | "delete", type: "image" | "note") => {
+        const auditAction = action === 'approve' ? 'CONTENT_APPROVE' : 'CONTENT_REJECT';
+
         try {
+            logFrontendAudit({
+                domain: 'ADMIN',
+                action: `${auditAction}_ATTEMPT`,
+                result: 'SUCCESS',
+                metadata: { id, type }
+            });
+
             const res = await fetch("/api/admin/approve", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, action, type }),
             });
 
+            const data = await res.json();
+
             if (res.ok) {
+                logFrontendAudit({
+                    domain: 'ADMIN',
+                    action: `${auditAction}_SUCCESS`,
+                    result: 'SUCCESS',
+                    metadata: { id, type }
+                });
                 toast({
                     type: "success",
                     message: "Status Updated",
@@ -101,15 +147,30 @@ export default function AdminDashboard() {
                 });
                 fetchPending();
             } else {
-                const data = await res.json();
+                logFrontendAudit({
+                    domain: 'ADMIN',
+                    action: `${auditAction}_FAIL`,
+                    result: 'FAIL',
+                    errorCategory: 'API',
+                    errorMessage: data.message,
+                    metadata: { id, type }
+                });
                 toast({
                     type: "error",
                     message: "Action Failed",
                     description: data.message || "Something went wrong."
                 });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            logFrontendAudit({
+                domain: 'ADMIN',
+                action: `${auditAction}_CRASH`,
+                result: 'FAIL',
+                errorCategory: 'UNKNOWN',
+                errorMessage: error.message,
+                metadata: { id, type }
+            });
             toast({
                 type: "error",
                 message: "System Error",

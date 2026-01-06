@@ -1,44 +1,36 @@
 import mongoose from 'mongoose';
 
 const AuditLogSchema = new mongoose.Schema({
-    type: {
-        type: String,
-        required: true,
-        index: true, // Optimizes filtering by event type
-    },
-    actorId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: false, // Can be system actions
-    },
-    actorRole: {
-        type: String,
-        default: 'system',
-    },
-    targetType: {
-        type: String,
-        enum: ['user', 'note', 'image', 'auth', 'system', 'admin'],
-    },
-    targetId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: false,
-    },
-    metadata: {
-        type: Object, // Flexible JSON storage for details
-        default: {},
-    },
+    // --- WHO (Context) ---
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+    userRole: { type: String, enum: ['guest', 'student', 'admin', 'super_admin'], default: 'guest' },
+    sessionId: { type: String, index: true }, // For correlation
     ip: String,
     userAgent: String,
-    status: {
-        type: String,
-        enum: ['success', 'failure', 'pending'],
-        default: 'success'
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-        expires: '90d', // Auto-delete logs after 90 days to save space
-    }
+
+    // --- WHAT (Event) ---
+    domain: { type: String, required: true, enum: ['AUTH', 'OTP', 'UPLOAD', 'ADMIN', 'SYSTEM'], index: true },
+    action: { type: String, required: true }, // Formerly 'type'
+    layer: { type: String, enum: ['frontend', 'backend', 'database', 'cloudinary'], default: 'backend' },
+
+    // --- RESULT (State) ---
+    result: { type: String, enum: ['SUCCESS', 'FAIL', 'RETRY'], required: true, index: true },
+    errorCategory: { type: String, enum: ['NETWORK', 'TIMEOUT', 'VALIDATION', 'AUTH', 'PROVIDER', 'POLICY', 'UNKNOWN'] },
+    errorCode: String,
+    errorMessage: String,
+
+    // --- TARGET (Object) ---
+    targetType: { type: String, enum: ['user', 'note', 'image', 'auth', 'system', 'admin'] },
+    targetId: { type: mongoose.Schema.Types.ObjectId },
+
+    // --- TRACEABILITY & PERF ---
+    requestId: { type: String, index: true },
+    durationMs: Number,
+    retryCount: { type: Number, default: 0 },
+
+    // --- META ---
+    metadata: { type: Object, default: {} },
+    createdAt: { type: Date, default: Date.now, expires: '90d' }
 });
 
 // Prevent model recompilation error
