@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Block all media
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.pdf
+/public/assets
+/legacy_static
+/_backup

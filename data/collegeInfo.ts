@@ -6,13 +6,13 @@ export const collegeInfo = {
         {
             name: "Late Karmveer Satyadev Singh",
             role: "Founder",
-            image: "/assets/FounderKaramveer.jpg",
+            image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465284/pharmaelevate/faculty/FounderKaramveer.jpg",
             bio: "Visionary leader whose dedication laid the foundation of the college."
         },
         {
             name: "Dr. Sanand Singh",
             role: "Chairman & MD",
-            image: "/assets/ChairmanDoctorSanandSingh.jpg",
+            image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465280/pharmaelevate/faculty/ChairmanDoctorSanandSingh.jpg",
             bio: "Guiding the institution with innovation, leadership, and a commitment to excellence."
         }
     ],

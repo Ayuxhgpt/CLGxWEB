@@ -6,7 +6,7 @@ export const facultyList = [
         qualification: "Ph.D. (Pharmaceutics), M.Pharm (Pharmaceutics)",
         experience: "15+ years",
         bio: "A visionary leader inspiring excellence in pharmacy education.",
-        image: "/assets/TejPratapSingh.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465361/pharmaelevate/faculty/TejPratapSingh.jpg"
     },
     {
         id: "1",
@@ -15,7 +15,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmaceutical Analysis)",
         experience: "10 years",
         bio: "Expert in analysis, guiding students with precision and clarity.",
-        image: "/assets/SumitKumarSingh.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465347/pharmaelevate/faculty/SumitKumarSingh.jpg"
     },
     {
         id: "2",
@@ -24,7 +24,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmaceutical Chemistry)",
         experience: "4 years",
         bio: "Motivates students with innovative insights into pharmaceutical chemistry.",
-        image: "/assets/MohammadImran.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465305/pharmaelevate/faculty/MohammadImran.jpg"
     },
     {
         id: "3",
@@ -33,7 +33,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmacology)",
         experience: "1 year",
         bio: "Dedicated teacher encouraging curiosity in pharmacology.",
-        image: "/assets/SurajKumarGupta.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465353/pharmaelevate/faculty/SurajKumarGupta.jpg"
     },
     {
         id: "4",
@@ -42,7 +42,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmaceutics)",
         experience: "1.5 years",
         bio: "Bringing modern perspectives into pharmaceutics education.",
-        image: "/assets/RohitKumarGautam.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465324/pharmaelevate/faculty/RohitKumarGautam.jpg"
     },
     {
         id: "5",
@@ -51,7 +51,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmaceutics)",
         experience: "6 months",
         bio: "Young academician passionate about pharmaceutics research.",
-        image: "/assets/AnuradhaSingh.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465247/pharmaelevate/faculty/AnuradhaSingh.jpg"
     },
     {
         id: "6",
@@ -60,7 +60,7 @@ export const facultyList = [
         qualification: "B.Pharm",
         experience: "3 years",
         bio: "Inspires students with engaging lectures and practical knowledge.",
-        image: "/assets/AzraNisha.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465264/pharmaelevate/faculty/AzraNisha.jpg"
     },
     {
         id: "7",
@@ -69,7 +69,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmaceutics)",
         experience: "4 years",
         bio: "Dedicated mentor with a strong focus on pharmaceutics.",
-        image: "/assets/PriyankaOjha.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465318/pharmaelevate/faculty/PriyankaOjha.jpg"
     },
     {
         id: "8",
@@ -78,7 +78,7 @@ export const facultyList = [
         qualification: "B.Pharm",
         experience: "3 years",
         bio: "Guides students with patience and care in pharmacy basics.",
-        image: "/assets/PriyankaYadav.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465320/pharmaelevate/faculty/PriyankaYadav.jpg"
     },
     {
         id: "9",
@@ -87,7 +87,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmacology)",
         experience: "1 year",
         bio: "Encouraging new learning approaches in pharmacology.",
-        image: "/assets/ShubhamKumarGupta.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465343/pharmaelevate/faculty/ShubhamKumarGupta.jpg"
     },
     {
         id: "10",
@@ -96,7 +96,7 @@ export const facultyList = [
         qualification: "M.Pharm (Pharmacology)",
         experience: "9 months",
         bio: "Brings enthusiasm and clarity to pharmacology sessions.",
-        image: "/assets/VedParkashSinghKushwaha.jpg"
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465363/pharmaelevate/faculty/VedParkashSinghKushwaha.jpg"
     },
     {
         id: "11",
@@ -105,6 +105,6 @@ export const facultyList = [
         qualification: "B.Pharm",
         experience: "6 months",
         bio: "Supports practical learning with dedication in laboratories.",
-        image: "/assets/GauravSinghKushwaha.jpg.jpg" // Preserving typical filename oddity from legacy
+        image: "https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465297/pharmaelevate/faculty/GauravSinghKushwaha_jpg.jpg" // Preserving typical filename oddity from legacy
     }
 ];

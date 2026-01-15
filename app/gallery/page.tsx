@@ -25,21 +25,21 @@ export default function GalleryPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                             <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <img
-                                    src="/assets/Building.jpg"
+                                    src="https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465271/pharmaelevate/college/Building.jpg"
                                     alt="College Building"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <img
-                                    src="/assets/pic1.jpg"
+                                    src="https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465312/pharmaelevate/college/pic1.jpg"
                                     alt="Campus View"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div className="aspect-video bg-[var(--bg-card)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <img
-                                    src="/assets/scp.jpg"
+                                    src="https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465335/pharmaelevate/college/scp.jpg"
                                     alt="College Logo"
                                     className="w-full h-full object-cover"
                                 />

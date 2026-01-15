@@ -201,7 +201,7 @@ export default function Home() {
             <div className="flex gap-8">
               <div className="text-center md:text-right">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-[var(--accent-primary)] mb-4">
-                  <Image src="/assets/ayupfp.jpg" alt="Ayush" width={80} height={80} className="w-full h-full object-cover" />
+                  <Image src="https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465257/pharmaelevate/system/ayupfp.jpg" alt="Ayush" width={80} height={80} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="font-bold">Ayush Gupta</h4>
                 <p className="text-xs text-[var(--text-muted)] mb-2">Lead Developer</p>
@@ -212,7 +212,7 @@ export default function Home() {
 
               <div className="text-center md:text-right">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-[var(--accent-primary)] mb-4">
-                  <Image src="/assets/sakpfp.jpg" alt="Saksham" width={80} height={80} className="w-full h-full object-cover" />
+                  <Image src="https://res.cloudinary.com/dkapfpxc5/image/upload/v1768465326/pharmaelevate/system/sakpfp.jpg" alt="Saksham" width={80} height={80} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="font-bold">Saksham Gupta</h4>
                 <p className="text-xs text-[var(--text-muted)] mb-2">Research Lead</p>
