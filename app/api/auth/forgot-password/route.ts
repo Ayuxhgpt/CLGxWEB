@@ -5,9 +5,25 @@ import { sendVerificationEmail } from '@/lib/email';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
+import { logAudit } from '@/lib/audit';
+
 export async function POST(req: Request) {
+    const requestId = crypto.randomUUID();
+    const startTime = Date.now();
+    let identifier = 'unknown';
+
     try {
-        const { email: identifier } = await req.json(); // We reuse 'email' field or rename it in frontend
+        const body = await req.json();
+        identifier = body.email; // Note: Frontend sends 'email' even if it is a username
+
+        // Log Request Start
+        logAudit({
+            domain: 'AUTH',
+            action: 'PASSWORD_RESET_REQUEST',
+            result: 'SUCCESS',
+            requestId,
+            metadata: { identifier }
+        });
 
         if (!identifier) {
             return NextResponse.json({ message: 'Email or Username is required' }, { status: 400 });
@@ -26,6 +42,13 @@ export async function POST(req: Request) {
         const genericMessage = 'If an account exists with this email, you will receive a reset code.';
 
         if (!user) {
+            logAudit({
+                domain: 'AUTH',
+                action: 'PASSWORD_RESET_IGNORED',
+                result: 'SUCCESS',
+                requestId,
+                metadata: { identifier, reason: 'User not found' }
+            });
             // Return success even if user not found to prevent enumeration
             return NextResponse.json({ message: genericMessage }, { status: 200 });
         }
@@ -38,6 +61,13 @@ export async function POST(req: Request) {
             const timeLeft = new Date(user.resetTokenExpiresAt).getTime() - Date.now();
             const timeElapsed = (10 * 60 * 1000) - timeLeft; // Assuming 10m expiry
             if (timeElapsed < 60 * 1000) {
+                logAudit({
+                    domain: 'AUTH',
+                    action: 'PASSWORD_RESET_RATE_LIMIT',
+                    result: 'FAIL',
+                    requestId,
+                    metadata: { identifier }
+                });
                 return NextResponse.json({ message: genericMessage }, { status: 200 }); // Still return generic success!
             }
         }
@@ -56,14 +86,31 @@ export async function POST(req: Request) {
         const targetEmail = user.email;
 
         try {
-            console.log(`[AUTH-FORGOT] Sending Reset OTP to ${targetEmail}`);
             await sendVerificationEmail(targetEmail, otp);
-            console.log(`[AUTH-FORGOT] Reset OTP sent to ${targetEmail}`);
+            logAudit({
+                domain: 'AUTH',
+                action: 'PASSWORD_RESET_SENT',
+                result: 'SUCCESS',
+                targetType: 'user',
+                targetId: user._id.toString(),
+                requestId,
+                durationMs: Date.now() - startTime
+            });
 
             return NextResponse.json({ message: genericMessage }, { status: 200 });
 
         } catch (emailError: any) {
             console.error(`[AUTH-CRITICAL] Failed to send Forgot Password OTP to ${targetEmail}`, emailError);
+
+            logAudit({
+                domain: 'AUTH',
+                action: 'PASSWORD_RESET_SEND_FAIL',
+                result: 'FAIL',
+                errorMessage: emailError.message,
+                requestId,
+                durationMs: Date.now() - startTime
+            });
+
             // In dev modes without a proper email setup, this often fails.
             // We should be clearer about the error if possible, or at least standardized.
             return NextResponse.json(
@@ -72,8 +119,16 @@ export async function POST(req: Request) {
             );
         }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Forgot Password Error:", error);
+        logAudit({
+            domain: 'AUTH',
+            action: 'PASSWORD_RESET_CRASH',
+            result: 'FAIL',
+            errorMessage: error.message,
+            requestId,
+            durationMs: Date.now() - startTime
+        });
         return NextResponse.json(
             { success: false, message: 'Internal Server Error', errorCode: 'INTERNAL_ERROR' },
             { status: 500 }

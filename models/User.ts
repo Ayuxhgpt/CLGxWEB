@@ -48,6 +48,10 @@ const UserSchema = new mongoose.Schema({
     otpSentAt: {
         type: Date,
     },
+    otpAttempts: {
+        type: Number,
+        default: 0,
+    },
     resetTokenHash: {
         type: String,
         select: false,
@@ -84,6 +88,11 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    // --- ANTI-ABUSE ---
+    strikes: { type: Number, default: 0 },
+    lastStrikeAt: { type: Date },
+    isUploadBanned: { type: Boolean, default: false },
+    // ------------------
     lastLogin: {
         type: Date,
     },

@@ -87,16 +87,25 @@ export default function UploadPage() {
         setProgress(5);
 
         try {
+            // 0. GENERATE SHA-256 HASH (Client-Side)
+            const buffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const fileHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
             // 1. Get Signature from our backend
             const folder = file.type.startsWith("image/") ? "pharma_elevate_albums" : "pharma_elevate_notes";
             const timestamp = Math.round(new Date().getTime() / 1000);
 
             const signRes = await fetch("/api/upload/sign", {
                 method: "POST",
-                body: JSON.stringify({ folder, timestamp }),
+                body: JSON.stringify({ folder, timestamp, fileHash }), // Send hash for check
             });
 
-            if (!signRes.ok) throw new Error("Failed to get upload signature");
+            if (!signRes.ok) {
+                const signError = await signRes.json();
+                throw new Error(signError.error || "Failed to get upload signature");
+            }
             const { signature, api_key, cloud_name } = await signRes.json();
 
             setProgress(20);
@@ -135,6 +144,8 @@ export default function UploadPage() {
                 title,
                 subject,
                 semester,
+                fileHash, // Save hash to DB
+                fileSize: file.size
             };
 
             const backendRes = await fetch("/api/upload", {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { v2 as cloudinary } from 'cloudinary';
 import { authOptions } from '@/lib/auth';
+import dbConnect from '@/lib/db';
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,7 +18,26 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { folder, timestamp, upload_preset } = await req.json();
+        const { folder, timestamp, upload_preset, fileHash } = await req.json();
+
+        // 1.1 DUPLICATE FILE PROTECTION (Gap B)
+        if (fileHash) {
+            // Check if hash exists in Notes or Images (non-deleted)
+            const Note = (await import('@/models/Note')).default;
+            const Image = (await import('@/models/Image')).default;
+
+            await dbConnect();
+
+            const existingNote = await Note.findOne({ fileHash, isDeleted: false });
+            if (existingNote) {
+                return NextResponse.json({ error: 'Duplicate file detected. This file has already been uploaded.' }, { status: 409 });
+            }
+
+            const existingImage = await Image.findOne({ fileHash, isDeleted: false });
+            if (existingImage) {
+                return NextResponse.json({ error: 'Duplicate file detected. This file has already been uploaded.' }, { status: 409 });
+            }
+        }
 
         // Security: Validate folder allowlist
         const allowedFolders = [

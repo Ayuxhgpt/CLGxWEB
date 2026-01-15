@@ -6,6 +6,8 @@ export const validatePassword = (password: string): { isValid: boolean; message?
     if (!/\d/.test(password)) {
         return { isValid: false, message: 'Password must contain at least one number.' };
     }
-    // Add more complexity checks here if needed (e.g., uppercase, special char)
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return { isValid: false, message: 'Password must contain at least one special character.' };
+    }
     return { isValid: true };
 };

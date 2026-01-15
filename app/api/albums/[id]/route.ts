@@ -21,7 +21,7 @@ export async function GET(req: Request, { params }: RouteParams) {
 
         // Fetch approved images (or all if admin? Simple MVP: fetch all approved)
         // TODO: Add logic to show unapproved to admins
-        const images = await Image.find({ albumId: id, status: 'approved' }).sort({ createdAt: -1 });
+        const images = await Image.find({ albumId: id, status: 'approved', isDeleted: false }).sort({ createdAt: -1 });
 
         return NextResponse.json({ album, images });
     } catch (error) {

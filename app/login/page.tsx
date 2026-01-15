@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { ArrowRight, Home, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logFrontendAudit } from "@/lib/audit-client";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -24,6 +25,14 @@ export default function LoginPage() {
         setError("");
         setIsLoading(true);
 
+        // Track Form Submit
+        logFrontendAudit({
+            domain: 'AUTH',
+            action: 'LOGIN_ATTEMPT_CLIENT',
+            result: 'SUCCESS',
+            metadata: { email }
+        });
+
         try {
             const res = await signIn("credentials", {
                 email,
@@ -34,14 +43,36 @@ export default function LoginPage() {
             if (res?.error) {
                 setError("Invalid credentials.");
                 setIsLoading(false);
+                logFrontendAudit({
+                    domain: 'AUTH',
+                    action: 'LOGIN_FAIL_CLIENT',
+                    result: 'FAIL',
+                    errorCategory: 'AUTH',
+                    errorMessage: res.error,
+                    metadata: { email }
+                });
                 return;
             }
 
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'LOGIN_SUCCESS_CLIENT',
+                result: 'SUCCESS',
+                metadata: { email }
+            });
+
             router.push("/dashboard");
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             setError("Something went wrong.");
             setIsLoading(false);
+            logFrontendAudit({
+                domain: 'AUTH',
+                action: 'LOGIN_EXCEPTION_CLIENT',
+                result: 'FAIL',
+                errorCategory: 'UNKNOWN',
+                errorMessage: error.message
+            });
         }
     };
 

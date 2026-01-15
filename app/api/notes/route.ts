@@ -4,7 +4,12 @@ import dbConnect from '@/lib/db';
 import Note from '@/models/Note';
 import { authOptions } from '@/lib/auth';
 
+import { logAudit } from '@/lib/audit';
+
 export async function GET(req: Request) {
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const startTime = Date.now();
+
     try {
         const { searchParams } = new URL(req.url);
         const semester = searchParams.get('semester');
@@ -12,64 +17,47 @@ export async function GET(req: Request) {
 
         await dbConnect();
 
-        const query: Record<string, unknown> = { status: 'approved' }; // Public API only shows approved notes
+        const query: Record<string, unknown> = { status: 'approved', isDeleted: false }; // Public API only shows approved notes
         if (semester) query.semester = semester;
         if (subject) query.subject = subject;
 
         const notes = await Note.find(query).sort({ createdAt: -1 }).populate('uploadedBy', 'name');
 
+        // Low-noise logging: Only log if search params exist or results are empty
+        if ((semester || subject) && notes.length === 0) {
+            logAudit({
+                domain: 'SYSTEM',
+                action: 'NOTE_SEARCH_EMPTY',
+                result: 'SUCCESS',
+                metadata: { semester, subject, count: 0 },
+                requestId
+            });
+        }
+
         return NextResponse.json({ success: true, data: notes }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Notes fetch error:', error);
+        logAudit({
+            domain: 'SYSTEM',
+            action: 'NOTE_FETCH_CRASH',
+            result: 'FAIL',
+            errorCategory: 'UNKNOWN',
+            errorMessage: error.message,
+            requestId,
+            durationMs: Date.now() - startTime
+        });
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
     }
 }
 
 export async function POST(req: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-
-        if (!session) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        }
-
-        const body = await req.json();
-        const { title, subject, semester, pdfUrl, publicId } = body;
-
-        if (!title || !subject || !semester || !pdfUrl || !publicId) {
-            return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
-        }
-
-        // Security: Force 'pending' status for non-admins
-        // Even if admin posts, we default to pending unless explicitly approved in a separate step (conceptually safer)
-        // But here we'll allow admin to post approved notes if they want, otherwise force pending.
-        let status = 'pending';
-        let approvedBy = null;
-
-        if (session.user.role === 'admin' && body.status === 'approved') {
-            status = 'approved';
-            approvedBy = session.user.id;
-        }
-
-        await dbConnect();
-
-        const newNote = await Note.create({
-            title,
-            subject,
-            semester,
-            pdfUrl,
-            publicId,
-            uploadedBy: session.user.id,
-            status: status,
-            statusUpdatedAt: new Date(),
-            approvedBy: approvedBy
-        });
-
-        return NextResponse.json({ success: true, message: 'Note created', data: newNote }, { status: 201 });
-    } catch (error) {
-        console.error('Note creation error:', error);
-        return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
-    }
+    // DEPRECATED: V3.0 - All uploads must go through /api/upload
+    // This ensures atomic commit/rollback and unified metadata handling.
+    return NextResponse.json({
+        success: false,
+        message: 'Endpoint Deprecated. Use /api/upload for all file submissions.',
+        errorCode: 'ENDPOINT_GONE'
+    }, { status: 410 });
 }
 
 export async function DELETE(req: Request) {

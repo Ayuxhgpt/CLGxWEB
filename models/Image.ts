@@ -9,6 +9,14 @@ const ImageSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    // --- INTEGRITY & GOVERNANCE ---
+    fileHash: { type: String, trim: true, index: true },
+    fileSize: { type: Number },
+
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // ------------------------------
     albumId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Album',

@@ -55,6 +55,14 @@ const NoteSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // --- INTEGRITY & GOVERNANCE ---
+    fileHash: { type: String, trim: true, index: true }, // SHA-256 for duplicate check
+    fileSize: { type: Number }, // Bytes
+
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // ------------------------------
     createdAt: {
         type: Date,
         default: Date.now,

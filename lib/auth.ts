@@ -43,8 +43,16 @@ export const authOptions: NextAuthOptions = {
                 const isValid = user && user.password && await bcrypt.compare(credentials.password, user.password);
 
                 // Generic error to prevent enumeration
+                // Generic error to prevent enumeration
                 if (!user || !isValid) {
-                    logAudit({ type: 'LOGIN_FAILURE', metadata: { identifier, reason: 'Invalid credentials' } });
+                    logAudit({
+                        domain: 'AUTH',
+                        action: 'LOGIN_FAILURE',
+                        result: 'FAIL',
+                        errorCategory: 'AUTH',
+                        errorMessage: 'Invalid credentials',
+                        metadata: { identifier }
+                    });
                     throw new Error('Invalid credentials');
                 }
 
@@ -80,7 +88,17 @@ export const authOptions: NextAuthOptions = {
 
                 // 2. BLOCK CHECK: If user exists and is blocked, DENY ACCESS IMMEDIATELY
                 if (existingUser && existingUser.isBlocked) {
-                    logAudit({ type: 'LOGIN_BLOCKED', actorId: existingUser._id.toString(), targetType: 'user', metadata: { email: user.email } });
+                    logAudit({
+                        domain: 'AUTH',
+                        action: 'LOGIN_BLOCKED',
+                        result: 'FAIL',
+                        errorCategory: 'POLICY',
+                        errorMessage: 'User is blocked',
+                        userId: existingUser._id.toString(),
+                        userRole: existingUser.role,
+                        targetType: 'user',
+                        metadata: { email: user.email }
+                    });
                     return false; // Redirects to error page
                 }
 
@@ -96,7 +114,14 @@ export const authOptions: NextAuthOptions = {
                             isVerified: true, // Auto-verify social logins
                             password: '', // No password for social
                         });
-                        logAudit({ type: 'USER_REGISTERED', actorRole: 'system', targetType: 'user', metadata: { email: user.email, provider: account.provider } });
+                        logAudit({
+                            domain: 'AUTH',
+                            action: 'USER_REGISTERED_SOCIAL',
+                            result: 'SUCCESS',
+                            userRole: 'system',
+                            targetType: 'user',
+                            metadata: { email: user.email, provider: account.provider }
+                        });
                     } else {
                         // Link or update existing user
                         if (!existingUser.provider) {
@@ -107,38 +132,60 @@ export const authOptions: NextAuthOptions = {
                         }
                     }
                 }
-                logAudit({ type: 'LOGIN_SUCCESS', actorId: existingUser?._id.toString() || 'unknown', targetType: 'auth', metadata: { email: user.email, provider: account?.provider } });
+                logAudit({
+                    domain: 'AUTH',
+                    action: 'LOGIN_SUCCESS',
+                    result: 'SUCCESS',
+                    userId: existingUser?._id.toString() || 'unknown',
+                    targetType: 'auth',
+                    metadata: { email: user.email, provider: account?.provider }
+                });
                 return true;
             } catch (error: any) {
                 console.error("Social Signin Error:", error);
-                logAudit({ type: 'AUTH_SYSTEM_ERROR', status: 'failure', metadata: { error: error.message } });
+                logAudit({
+                    domain: 'AUTH',
+                    action: 'AUTH_SYSTEM_ERROR',
+                    result: 'FAIL',
+                    errorCategory: 'UNKNOWN',
+                    errorMessage: error.message
+                });
                 return false;
             }
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.role = user.role || 'student';
                 token.id = user.id;
                 token.isBlocked = user.isBlocked;
                 token.picture = user.image;
             }
-            // Fetch latest role/block status on every JWT update to be safe
-            if (token.id) {
+
+            // Refetch strict authority on every JWT access (poll for ban/role change)
+            if (token.sub) {
                 await dbConnect();
-                const freshUser = await User.findById(token.id).select('role isBlocked image');
+                // Check against DB
+                const freshUser = await User.findById(token.sub).select('role isBlocked isVerified image');
                 if (freshUser) {
                     token.role = freshUser.role;
-                    token.isBlocked = freshUser.isBlocked;
+                    token.isBlocked = freshUser.isBlocked; // Add to token
+                    token.isVerified = freshUser.isVerified;
                     token.picture = freshUser.image;
                 }
+            }
+
+            if (trigger === "update" && session) {
+                return { ...token, ...session.user };
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.role = token.role;
-                session.user.id = token.id;
-                session.user.isBlocked = token.isBlocked;
+                session.user.role = token.role as string;
+                session.user.id = token.id as string;
+                session.user.isVerified = token.isVerified as boolean;
+                // @ts-ignore
+                session.user.isBlocked = token.isBlocked as boolean;
                 if (token.picture) session.user.image = token.picture;
             }
             return session;

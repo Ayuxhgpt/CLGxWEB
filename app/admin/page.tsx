@@ -35,7 +35,8 @@ interface PendingImage {
 export default function AdminDashboard() {
     const { data: session } = useSession();
     const [pendingData, setPendingData] = useState<{ images: any[]; notes: any[] }>({ images: [], notes: [] });
-    const [activeTab, setActiveTab] = useState<'images' | 'notes'>('images');
+    const [usersData, setUsersData] = useState<{ users: any[], totalPages: number, page: number }>({ users: [], totalPages: 1, page: 1 });
+    const [activeTab, setActiveTab] = useState<'images' | 'notes' | 'users'>('images');
     const [loading, setLoading] = useState(true);
 
     // Note Upload State
@@ -66,22 +67,12 @@ export default function AdminDashboard() {
                 result: 'SUCCESS',
             });
             fetchPendingContent();
-        }
-    }, [session]);
-
-    // Track Admin View
-    useEffect(() => {
-        if (session?.user) {
-            logFrontendAudit({
-                domain: 'ADMIN',
-                action: 'ADMIN_DASHBOARD_VIEW',
-                result: 'SUCCESS',
-            });
+            fetchUsers(1);
         }
     }, [session]);
 
     // Track Tab Switch
-    const handleTabChange = (tab: 'images' | 'notes') => {
+    const handleTabChange = (tab: 'images' | 'notes' | 'users') => {
         setActiveTab(tab);
         logFrontendAudit({
             domain: 'ADMIN',
@@ -89,6 +80,37 @@ export default function AdminDashboard() {
             result: 'SUCCESS',
             metadata: { tab }
         });
+    };
+
+    const fetchUsers = async (page: number) => {
+        try {
+            const res = await fetch(`/api/admin/users?page=${page}&limit=10`);
+            const data = await res.json();
+            if (data.success !== false) {
+                setUsersData({ users: data.users || [], totalPages: data.totalPages || 1, page: data.currentPage || 1 });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUserAction = async (userId: string, action: 'block' | 'unblock' | 'role_update', role?: string) => {
+        try {
+            const res = await fetch("/api/admin/users", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, action, role }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast({ type: "success", message: "Success", description: data.message });
+                fetchUsers(usersData.page); // Refresh
+            } else {
+                toast({ type: "error", message: "Failed", description: data.message });
+            }
+        } catch (err) {
+            toast({ type: "error", message: "Error", description: "Failed to update user." });
+        }
     };
 
     const fetchPendingContent = async () => {
@@ -145,13 +167,13 @@ export default function AdminDashboard() {
                     message: "Status Updated",
                     description: `Successfully ${action}d the ${type}.`
                 });
-                fetchPending();
+                fetchPendingContent();
             } else {
                 logFrontendAudit({
                     domain: 'ADMIN',
                     action: `${auditAction}_FAIL`,
                     result: 'FAIL',
-                    errorCategory: 'API',
+                    errorCategory: 'NETWORK',
                     errorMessage: data.message,
                     metadata: { id, type }
                 });
@@ -344,6 +366,13 @@ export default function AdminDashboard() {
                             <FileText className="h-4 w-4" /> Notes
                             <Badge variant={activeTab === 'notes' ? "default" : "secondary"} className="ml-1 h-5 px-1.5 min-w-[1.25rem]">{pendingData.notes.length}</Badge>
                         </button>
+                        <button
+                            onClick={() => setActiveTab('users')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'users' ? 'bg-bg-card shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+                        >
+                            <User className="h-4 w-4" /> Users
+                            <Badge variant={activeTab === 'users' ? "default" : "secondary"} className="ml-1 h-5 px-1.5 min-w-[1.25rem]">{usersData.users.length}</Badge>
+                        </button>
                     </div>
                 </motion.header>
 
@@ -421,7 +450,7 @@ export default function AdminDashboard() {
                                                     </tr>
                                                 ))
                                             )
-                                        ) : (
+                                        ) : activeTab === 'notes' ? (
                                             pendingData.notes.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={4} className="p-8">
@@ -466,7 +495,46 @@ export default function AdminDashboard() {
                                                     </tr>
                                                 ))
                                             )
-                                        )}
+                                        ) : activeTab === 'users' ? (
+                                            usersData.users.length === 0 ? (
+                                                <tr><td colSpan={4} className="p-8"><EmptyState title="No Users" description="No users found." icon={User} className="border-0 shadow-none bg-transparent" /></td></tr>
+                                            ) : (
+                                                usersData.users.map((user: any) => (
+                                                    <tr key={user._id} className="bg-bg-card hover:bg-bg-surface transition-colors h-16">
+                                                        <td className="px-6 py-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold overflow-hidden">
+                                                                    {user.image ? <NextImage src={user.image} width={32} height={32} className="w-full h-full object-cover" alt="" unoptimized /> : user.name?.[0]}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-medium text-text-primary">{user.name}</div>
+                                                                    <div className="text-xs text-text-secondary">{user.email}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-2">
+                                                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+                                                        </td>
+                                                        <td className="px-6 py-2">
+                                                            <Badge variant={user.isBlocked ? 'destructive' : 'outline'} className={user.isBlocked ? "bg-red-500/10 text-red-500 border-red-500/20" : "text-green-500 border-green-500/20"}>{user.isBlocked ? 'Blocked' : 'Active'}</Badge>
+                                                        </td>
+                                                        <td className="px-6 py-2 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                {user.role !== 'admin' && (
+                                                                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleUserAction(user._id, 'role_update', 'admin')}>Promote</Button>
+                                                                )}
+                                                                {user.role === 'admin' && (
+                                                                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleUserAction(user._id, 'role_update', 'student')}>Demote</Button>
+                                                                )}
+                                                                <Button size="sm" variant="outline" className={`h-8 text-xs ${user.isBlocked ? "text-green-500 border-green-500/20" : "text-red-500 border-red-500/20"}`} onClick={() => handleUserAction(user._id, user.isBlocked ? 'unblock' : 'block')}>
+                                                                    {user.isBlocked ? 'Unblock' : 'Block'}
+                                                                </Button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )
+                                        ) : null}
                                     </tbody>
                                 </table>
                             </div>

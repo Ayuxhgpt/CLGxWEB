@@ -42,7 +42,9 @@ export async function POST(req: Request) {
             title,
             subject,
             semester,
-            type // Added type field for general uploads if needed
+            type,
+            fileHash,
+            fileSize
         } = body;
 
         // 2. Validate Payload
@@ -62,6 +64,45 @@ export async function POST(req: Request) {
         const userId = (session.user as any).id;
         const userRole = (session.user as any).role;
 
+        // 1.1.D SIZE ENFORCEMENT (Backend Hard Check)
+        const MAX_SIZE_BYTES = 4.5 * 1024 * 1024; // 4.5 MB (allow metadata buffer)
+        if (fileSize && fileSize > MAX_SIZE_BYTES) {
+            logAudit({
+                domain: 'UPLOAD',
+                action: 'UPLOAD_SIZE_EXCEEDED',
+                result: 'FAIL',
+                errorCategory: 'POLICY',
+                errorMessage: `File too large: ${(fileSize / 1024 / 1024).toFixed(2)}MB`,
+                userId: (session.user as any).id,
+                requestId
+            });
+            return NextResponse.json({ success: false, message: 'File size exceeds limit (4MB)', errorCode: 'FILE_TOO_LARGE' }, { status: 413 });
+        }
+
+        await dbConnect();
+
+        // 2.1 ABUSE CONTROL: Max 10 Pending Uploads
+        if (userRole !== 'admin') {
+            const pendingNotes = await Note.countDocuments({ uploadedBy: userId, status: 'pending' });
+            if (pendingNotes >= 10) {
+                logAudit({
+                    domain: 'UPLOAD',
+                    action: 'UPLOAD_RATE_LIMIT_EXCEEDED',
+                    result: 'FAIL',
+                    errorCategory: 'POLICY',
+                    errorMessage: 'Max pending uploads reached',
+                    userId: userId,
+                    requestId,
+                    metadata: { pendingCount: pendingNotes }
+                });
+                return NextResponse.json({
+                    success: false,
+                    message: 'You have too many pending uploads (Max 10). Please wait for approval.',
+                    errorCode: 'RATE_LIMIT_EXCEEDED'
+                }, { status: 429 });
+            }
+        }
+
         // 3. Log Start
         logAudit({
             domain: 'UPLOAD',
@@ -72,6 +113,14 @@ export async function POST(req: Request) {
             requestId,
             metadata: { public_id, folder, albumId, title }
         });
+
+        // ---------------------------------------------------------
+        // STATE MACHINE ENFORCEMENT
+        // ---------------------------------------------------------
+        let finalStatus = 'pending';
+        if (userRole === 'admin') {
+            finalStatus = 'approved';
+        }
 
         await dbConnect();
 
@@ -93,8 +142,6 @@ export async function POST(req: Request) {
             }
 
             try {
-                const isAdmin = userRole === 'admin';
-
                 logAudit({
                     domain: 'UPLOAD',
                     action: 'DB_SAVE_ATTEMPT',
@@ -109,11 +156,13 @@ export async function POST(req: Request) {
                     subject,
                     semester,
                     pdfUrl: secure_url,
-                    publicId: public_id, // v3 Hardening: Storing publicId for cleanup
+                    publicId: public_id,
                     uploadedBy: userId,
-                    status: isAdmin ? 'approved' : 'pending',
-                    approvedBy: isAdmin ? userId : null,
+                    status: finalStatus,
+                    approvedBy: finalStatus === 'approved' ? userId : null,
                     statusUpdatedAt: new Date(),
+                    fileHash, // v3 Hardening
+                    fileSize
                 });
 
                 logAudit({
@@ -125,7 +174,7 @@ export async function POST(req: Request) {
                     targetId: newNote._id.toString(),
                     requestId,
                     durationMs: Date.now() - startTime,
-                    metadata: { title, publicId: public_id }
+                    metadata: { title, publicId: public_id, finalStatus }
                 });
 
                 return NextResponse.json({ success: true, message: 'Note uploaded successfully', data: newNote }, { status: 201 });
@@ -137,14 +186,14 @@ export async function POST(req: Request) {
                     domain: 'UPLOAD',
                     action: 'DB_SAVE_FAIL',
                     result: 'FAIL',
-                    errorCategory: 'DATABASE',
+                    errorCategory: 'UNKNOWN',
                     errorMessage: dbError.message,
                     userId: userId,
                     requestId,
                     metadata: { publicId: public_id }
                 });
 
-                // ATOMIC ROLLBACK: Remove orphan file from Cloudinary
+                // ATOMIC ROLLBACK
                 try {
                     await cloudinary.uploader.destroy(public_id, { resource_type: 'raw' });
                     logAudit({
@@ -161,7 +210,7 @@ export async function POST(req: Request) {
                         domain: 'UPLOAD',
                         action: 'ROLLBACK_FAIL',
                         result: 'FAIL',
-                        errorCategory: 'UNKNOWN', // Critical Orphan File
+                        errorCategory: 'UNKNOWN',
                         errorMessage: rollbackError.message,
                         userId: userId,
                         requestId,
@@ -169,7 +218,6 @@ export async function POST(req: Request) {
                     });
                 }
 
-                throw dbError; // Re-throw to hit outer catch if needed, or return error response
                 return NextResponse.json({ success: false, message: 'Database save failed', errorCode: 'DB_ERROR' }, { status: 500 });
             }
         }
@@ -194,8 +242,10 @@ export async function POST(req: Request) {
                     albumId,
                     uploadedBy: userId,
                     caption: caption || '',
-                    status: userRole === 'admin' ? 'approved' : 'pending',
+                    status: finalStatus,
                     statusUpdatedAt: new Date(),
+                    fileHash, // v3 Hardening
+                    fileSize
                 });
 
                 logAudit({
@@ -219,7 +269,7 @@ export async function POST(req: Request) {
                     domain: 'UPLOAD',
                     action: 'DB_SAVE_FAIL',
                     result: 'FAIL',
-                    errorCategory: 'DATABASE',
+                    errorCategory: 'UNKNOWN', // Database error
                     errorMessage: dbError.message,
                     userId: userId,
                     requestId
